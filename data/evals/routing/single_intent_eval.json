@@ -1,0 +1,149 @@
+{
+  "suite_id": "routing_single_intent",
+  "name": "Single-Intent Fast-Path Routing Evaluation",
+  "category": "routing",
+  "description": "Evaluates fast-path deterministic domain and intent classification across all 8 specialized domains and GENERAL fallback.",
+  "metadata": {"version": "1.0.0", "target_threshold": 95.0},
+  "cases": [
+    {
+      "case_id": "ROUTE_EQ_001",
+      "category": "single_intent",
+      "query": "What is Reliance share price today?",
+      "expected_domain": "EQUITY",
+      "expected_intent": "quote",
+      "expected_outcome": "pass",
+      "tags": ["equity", "quote", "fast_path"],
+      "description": "Standard equity price quote query for RELIANCE"
+    },
+    {
+      "case_id": "ROUTE_EQ_002",
+      "category": "single_intent",
+      "query": "Is the stock market open today?",
+      "expected_domain": "EQUITY",
+      "expected_intent": "market_status",
+      "expected_outcome": "pass",
+      "tags": ["equity", "market_status"],
+      "description": "NSE market session status inquiry"
+    },
+    {
+      "case_id": "ROUTE_EQ_003",
+      "category": "single_intent",
+      "query": "What is an Initial Public Offering (IPO)?",
+      "expected_domain": "EQUITY",
+      "expected_intent": "educational_concept",
+      "expected_outcome": "pass",
+      "tags": ["equity", "conceptual", "rag"],
+      "description": "Equity regulatory concept suitable for SEBI RAG"
+    },
+    {
+      "case_id": "ROUTE_CR_001",
+      "category": "single_intent",
+      "query": "What is the current price of Bitcoin?",
+      "expected_domain": "CRYPTO",
+      "expected_intent": "quote",
+      "expected_outcome": "pass",
+      "tags": ["crypto", "quote"],
+      "description": "Crypto quote query for BTC"
+    },
+    {
+      "case_id": "ROUTE_CR_002",
+      "category": "single_intent",
+      "query": "Explain how proof of stake blockchain works",
+      "expected_domain": "CRYPTO",
+      "expected_intent": "educational_concept",
+      "expected_outcome": "pass",
+      "tags": ["crypto", "educational"],
+      "description": "Blockchain consensus pedagogy query"
+    },
+    {
+      "case_id": "ROUTE_PF_001",
+      "category": "single_intent",
+      "query": "How does the 50/30/20 budgeting framework work?",
+      "expected_domain": "PERSONAL_FINANCE",
+      "expected_intent": "educational_concept",
+      "expected_outcome": "pass",
+      "tags": ["personal_finance", "budgeting"],
+      "description": "Personal finance 50/30/20 budgeting conceptual inquiry"
+    },
+    {
+      "case_id": "ROUTE_PF_002",
+      "category": "single_intent",
+      "query": "Calculate my 50/30/20 budget for monthly salary of 60000",
+      "expected_domain": "PERSONAL_FINANCE",
+      "expected_intent": "calculation",
+      "expected_outcome": "pass",
+      "tags": ["personal_finance", "math"],
+      "description": "Personal finance deterministic calculation inquiry"
+    },
+    {
+      "case_id": "ROUTE_DER_001",
+      "category": "single_intent",
+      "query": "Calculate payoff for Nifty 24500 Call with premium 120",
+      "expected_domain": "DERIVATIVES",
+      "expected_intent": "calculation",
+      "expected_outcome": "pass",
+      "tags": ["derivatives", "options", "payoff"],
+      "description": "Derivatives option payoff calculation request"
+    },
+    {
+      "case_id": "ROUTE_DER_002",
+      "category": "single_intent",
+      "query": "What does option Greek Gamma measure?",
+      "expected_domain": "DERIVATIVES",
+      "expected_intent": "calculation",
+      "expected_outcome": "pass",
+      "tags": ["derivatives", "greeks"],
+      "description": "Option Greeks educational inquiry"
+    },
+    {
+      "case_id": "ROUTE_PORT_001",
+      "category": "single_intent",
+      "query": "What is my current portfolio value and asset allocation?",
+      "expected_domain": "PORTFOLIO",
+      "expected_intent": "calculation",
+      "expected_outcome": "pass",
+      "tags": ["portfolio", "analytics"],
+      "description": "Portfolio analytics request"
+    },
+    {
+      "case_id": "ROUTE_NEWS_001",
+      "category": "single_intent",
+      "query": "What is the latest market news for TCS?",
+      "expected_domain": "NEWS",
+      "expected_intent": "overview",
+      "expected_outcome": "pass",
+      "tags": ["news", "ticker"],
+      "description": "Financial news inquiry for TCS"
+    },
+    {
+      "case_id": "ROUTE_QUIZ_001",
+      "category": "single_intent",
+      "query": "Quiz me on equity markets",
+      "expected_domain": "QUIZ",
+      "expected_intent": "educational_concept",
+      "expected_outcome": "pass",
+      "tags": ["quiz", "interactive"],
+      "description": "Financial education quiz request"
+    },
+    {
+      "case_id": "ROUTE_ONB_001",
+      "category": "single_intent",
+      "query": "What can Finova AI do and how does it protect my privacy?",
+      "expected_domain": "ONBOARDING",
+      "expected_intent": "overview",
+      "expected_outcome": "pass",
+      "tags": ["onboarding", "capabilities"],
+      "description": "System overview and privacy capabilities query"
+    },
+    {
+      "case_id": "ROUTE_GEN_001",
+      "category": "single_intent",
+      "query": "What is financial risk?",
+      "expected_domain": "GENERAL",
+      "expected_intent": "educational_concept",
+      "expected_outcome": "pass",
+      "tags": ["general", "fallback"],
+      "description": "Generic broad finance query not bound to a single asset class"
+    }
+  ]
+}

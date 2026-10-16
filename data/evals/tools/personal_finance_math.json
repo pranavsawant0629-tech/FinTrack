@@ -1,0 +1,78 @@
+{
+  "suite_id": "tools_personal_finance_math",
+  "name": "Deterministic Personal Finance Mathematical Engine Evaluation",
+  "category": "tools",
+  "description": "Evaluates closed-form correctness of SIP annuity-due, compound interest, 50/30/20 budgeting, and emergency fund formulas.",
+  "metadata": {"version": "1.0.0", "target_accuracy": 100.0},
+  "cases": [
+    {
+      "case_id": "MATH_PF_001",
+      "category": "budget_50_30_20",
+      "input_data": {"income": 50000.0},
+      "expected_outcome": "pass",
+      "expected_output": {
+        "income": 50000.0,
+        "needs": 25000.0,
+        "wants": 15000.0,
+        "savings": 10000.0,
+        "sum_check": 50000.0
+      },
+      "tags": ["personal_finance", "budget", "50_30_20"],
+      "description": "50/30/20 budget breakdown for 50,000 monthly income"
+    },
+    {
+      "case_id": "MATH_PF_002",
+      "category": "sip_annuity_due",
+      "input_data": {
+        "monthly_investment": 5000.0,
+        "annual_return_pct": 12.0,
+        "tenure_years": 10.0
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "monthly_investment": 5000.0,
+        "total_invested": 600000.0,
+        "future_value": 1161695.39,
+        "wealth_gain": 561695.39
+      },
+      "tags": ["personal_finance", "sip", "annuity_due"],
+      "description": "SIP calculation for 5,000/mo at 12% over 10 years (120 months)"
+    },
+    {
+      "case_id": "MATH_PF_003",
+      "category": "compound_interest",
+      "input_data": {
+        "principal": 100000.0,
+        "annual_rate_pct": 8.0,
+        "tenure_years": 5.0,
+        "compounding_frequency": 1
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "principal": 100000.0,
+        "maturity_amount": 146932.81,
+        "interest_earned": 46932.81
+      },
+      "tags": ["personal_finance", "compounding"],
+      "description": "Annual compound interest: 100,000 at 8% for 5 years = 146,932.81"
+    },
+    {
+      "case_id": "MATH_PF_004",
+      "category": "emergency_fund",
+      "input_data": {
+        "monthly_expenses": 30000.0,
+        "current_savings": 90000.0,
+        "target_months": 6.0
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "monthly_expenses": 30000.0,
+        "target_fund": 180000.0,
+        "funding_gap": 90000.0,
+        "months_covered": 3.0
+      },
+      "tags": ["personal_finance", "emergency_fund"],
+      "description": "Emergency fund adequacy analysis: 3 months covered out of 6 target"
+    }
+  ]
+}

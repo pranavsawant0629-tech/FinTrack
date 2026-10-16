@@ -1,0 +1,80 @@
+{
+  "suite_id": "routing_compound",
+  "name": "Compound Multi-Intent Query Decomposition Evaluation",
+  "category": "routing",
+  "description": "Tests query decomposer on multi-intent, comparative, and cross-domain compound inquiries.",
+  "metadata": {"version": "1.0.0", "target_threshold": 92.0},
+  "cases": [
+    {
+      "case_id": "COMP_001",
+      "category": "compound_archetype_b",
+      "query": "What is Reliance trading at and what is an IPO?",
+      "expected_domain": "EQUITY",
+      "expected_intent": "compound",
+      "expected_outcome": "pass",
+      "expected_subtasks": [
+        {"domain": "EQUITY", "intent": "quote", "target_entity": "RELIANCE"},
+        {"domain": "EQUITY", "intent": "educational_concept"}
+      ],
+      "tags": ["compound", "equity", "quote_concept"],
+      "description": "Archetype B: Live equity quote combined with conceptual RAG inquiry"
+    },
+    {
+      "case_id": "COMP_002",
+      "category": "compound_archetype_c",
+      "query": "Compare Reliance and TCS price",
+      "expected_domain": "EQUITY",
+      "expected_intent": "quote",
+      "expected_outcome": "pass",
+      "expected_subtasks": [
+        {"domain": "EQUITY", "intent": "quote", "target_entity": "RELIANCE"},
+        {"domain": "EQUITY", "intent": "quote", "target_entity": "TCS"}
+      ],
+      "tags": ["compound", "comparative", "multi_quote"],
+      "description": "Archetype C: Multi-company comparative quote request"
+    },
+    {
+      "case_id": "COMP_003",
+      "category": "compound_cross_domain",
+      "query": "What is an IPO and how do I budget 50000 with 50/30/20?",
+      "expected_domain": "EQUITY",
+      "expected_intent": "compound",
+      "expected_outcome": "pass",
+      "expected_subtasks": [
+        {"domain": "EQUITY", "intent": "educational_concept"},
+        {"domain": "PERSONAL_FINANCE", "intent": "calculation"}
+      ],
+      "tags": ["compound", "cross_domain", "equity_pf"],
+      "description": "Cross-domain compound query combining Equity RAG and Personal Finance budgeting"
+    },
+    {
+      "case_id": "COMP_004",
+      "category": "compound_cross_domain",
+      "query": "What is Bitcoin price and what is an ETF?",
+      "expected_domain": "CRYPTO",
+      "expected_intent": "compound",
+      "expected_outcome": "pass",
+      "expected_subtasks": [
+        {"domain": "CRYPTO", "intent": "quote", "target_entity": "BTC"},
+        {"domain": "EQUITY", "intent": "educational_concept"}
+      ],
+      "tags": ["compound", "cross_domain", "crypto_equity"],
+      "description": "Cross-domain query combining Crypto quote with Equity ETF concept"
+    },
+    {
+      "case_id": "COMP_005",
+      "category": "compound_three_domain",
+      "query": "What is an IPO, what is Bitcoin, and how does 50/30/20 budgeting work?",
+      "expected_domain": "EQUITY",
+      "expected_intent": "compound",
+      "expected_outcome": "pass",
+      "expected_subtasks": [
+        {"domain": "EQUITY", "intent": "educational_concept"},
+        {"domain": "CRYPTO", "intent": "educational_concept"},
+        {"domain": "PERSONAL_FINANCE", "intent": "educational_concept"}
+      ],
+      "tags": ["compound", "three_domain"],
+      "description": "Archetype D: Three-domain query requiring Equity, Crypto, and Personal Finance subtasks"
+    }
+  ]
+}

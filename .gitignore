@@ -1,0 +1,71 @@
+# Virtual Environment
+.venv-finova/
+venv/
+env/
+
+# Node & Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Environment Variables & Secrets
+.env
+*.env
+!.env.example
+
+# Vector Storage & Cache
+data/qdrant_storage/
+data/cache/
+*.db
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs & Temporary Files
+*.log
+*.tmp
+
+# IDEs & OS Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Phase backups & quarantine
+data/backup_phase1/
+data/quarantine/
+*.backup
+*.bak
+*.orig
+
+# Credentials & Keys
+*.pem
+*.key
+*.cert
+*.crt
+id_rsa*
+id_ed25519*
+token*

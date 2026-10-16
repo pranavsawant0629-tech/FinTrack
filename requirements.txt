@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+pydantic
+python-dotenv
+ollama
+pytest
+httpx
+fastembed
+qdrant-client
+pypdf
+yfinance

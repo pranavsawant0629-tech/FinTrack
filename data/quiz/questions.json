@@ -1,0 +1,152 @@
+[
+  {
+    "id": "eq_beg_1",
+    "topic": "equity",
+    "difficulty": "beginner",
+    "question": "What is the primary difference between investing in equity shares and debt instruments?",
+    "options": {
+      "A": "Equity represents part ownership in a company, while debt is a loan with fixed obligation",
+      "B": "Equity guarantees a fixed annual return, while debt returns fluctuate",
+      "C": "Debt instruments have unlimited upside potential compared to equity",
+      "D": "Equity investments are fully insured by the Reserve Bank of India"
+    },
+    "correct_option": "A",
+    "explanation": "Equity shares represent partial ownership in the company and carry residual risk/reward, whereas debt instruments represent loans with fixed interest obligations and priority in liquidation.",
+    "source_reference": "SEBI Investor Education Material"
+  },
+  {
+    "id": "eq_int_1",
+    "topic": "equity",
+    "difficulty": "intermediate",
+    "question": "What does a P/E (Price-to-Earnings) ratio of 25 typically indicate?",
+    "options": {
+      "A": "The company earns ₹25 for every share owned",
+      "B": "Investors are paying ₹25 for every ₹1 of company annual earnings",
+      "C": "The stock price has risen by 25% over the past year",
+      "D": "The dividend yield of the company is 25%"
+    },
+    "correct_option": "B",
+    "explanation": "P/E ratio equals Current Market Price divided by Earnings Per Share (EPS). A P/E of 25 means investors pay ₹25 for each ₹1 of annual earnings.",
+    "source_reference": "NISM Series XII: Securities Markets Foundation"
+  },
+  {
+    "id": "deriv_beg_1",
+    "topic": "derivatives",
+    "difficulty": "beginner",
+    "question": "According to official SEBI research, what proportion of individual retail traders incur net losses in the equity F&O (Futures & Options) segment?",
+    "options": {
+      "A": "Approximately 10%",
+      "B": "Approximately 50%",
+      "C": "Approximately 93% (over 9 out of 10)",
+      "D": "Fewer than 5%"
+    },
+    "correct_option": "C",
+    "explanation": "SEBI's landmark study on individual traders in equity F&O revealed that 93% of retail traders incurred net trading losses between FY22 and FY24.",
+    "source_reference": "SEBI Study on Analysis of Profit and Loss of Individual Traders in Equity F&O (2024)"
+  },
+  {
+    "id": "deriv_int_1",
+    "topic": "derivatives",
+    "difficulty": "intermediate",
+    "question": "What is the maximum potential loss for a buyer of a standalone Call Option (Long Call)?",
+    "options": {
+      "A": "Unlimited",
+      "B": "Equal to the Strike Price",
+      "C": "Strictly limited to the premium paid",
+      "D": "Double the premium paid"
+    },
+    "correct_option": "C",
+    "explanation": "An option buyer pays a non-refundable premium for the right (not obligation) to buy. If the underlying expires below the strike, the option expires worthless and loss is strictly capped at the premium paid.",
+    "source_reference": "NISM Series VIII: Equity Derivatives Certification"
+  },
+  {
+    "id": "pf_beg_1",
+    "topic": "personal_finance",
+    "difficulty": "beginner",
+    "question": "Under the 50/30/20 budgeting rule, what should the 20% portion ideally be allocated to?",
+    "options": {
+      "A": "Discretionary lifestyle desires and entertainment",
+      "B": "Essential groceries, rent, and utility bills",
+      "C": "Savings, debt reduction, and emergency fund investments",
+      "D": "Speculative high-risk stock trading"
+    },
+    "correct_option": "C",
+    "explanation": "The 50/30/20 framework suggests allocating 50% to Needs, 30% to Wants, and 20% to Savings, debt prepayment, and long-term investments.",
+    "source_reference": "Finova Financial Literacy Framework"
+  },
+  {
+    "id": "pf_int_1",
+    "topic": "personal_finance",
+    "difficulty": "intermediate",
+    "question": "Under the Indian Income Tax Act, 1961, what is the flat tax rate applied to income from Virtual Digital Assets (Crypto) under Section 115BBH?",
+    "options": {
+      "A": "10% plus surcharge",
+      "B": "20% with indexation benefit",
+      "C": "30% (plus applicable surcharge and 4% cess) with no deduction for expenses except cost of acquisition",
+      "D": "Exempt up to ₹5 lakh per financial year"
+    },
+    "correct_option": "C",
+    "explanation": "Section 115BBH mandates a flat 30% tax on transfer of virtual digital assets without indexation or set-off of losses from other income heads.",
+    "source_reference": "Income Tax Act, 1961 (Section 115BBH)"
+  },
+  {
+    "id": "crypto_beg_1",
+    "topic": "crypto",
+    "difficulty": "beginner",
+    "question": "In India, what is the legal regulatory status of cryptocurrencies and Virtual Digital Assets (VDAs)?",
+    "options": {
+      "A": "Recognized as legal tender by the Reserve Bank of India",
+      "B": "Unregulated speculative assets that are NOT legal tender and carry no statutory investor protection",
+      "C": "Government-backed digital securities supervised under SEBI mutual fund rules",
+      "D": "Completely banned and criminalized under the IT Act"
+    },
+    "correct_option": "B",
+    "explanation": "Cryptocurrencies are not legal tender in India and are unregulated by SEBI/RBI as securities, carrying high volatility and zero statutory compensation for fraud or collapse.",
+    "source_reference": "RBI Financial Stability Report & Ministry of Finance Advisories"
+  },
+  {
+    "id": "port_beg_1",
+    "topic": "portfolio",
+    "difficulty": "beginner",
+    "question": "What is the primary objective of asset allocation and diversification across non-correlated asset classes?",
+    "options": {
+      "A": "To guarantee 100% positive returns every month",
+      "B": "To reduce unsystematic (company-specific) portfolio risk without necessarily sacrificing expected long-term return",
+      "C": "To avoid paying any taxes on capital gains",
+      "D": "To ensure all investments mature on the exact same date"
+    },
+    "correct_option": "B",
+    "explanation": "Diversification reduces unsystematic risk by spreading exposure across multiple companies, sectors, and asset classes that do not move in perfect tandem.",
+    "source_reference": "NISM Series X-A: Investment Adviser Certification"
+  },
+  {
+    "id": "port_int_1",
+    "topic": "portfolio",
+    "difficulty": "intermediate",
+    "question": "In portfolio risk analysis, what does Beta (β) measure?",
+    "options": {
+      "A": "The sensitivity of an asset's returns relative to market index movements",
+      "B": "The total dividend paid out by the fund manager",
+      "C": "The annual compounding rate of interest",
+      "D": "The percentage of cash held in the portfolio"
+    },
+    "correct_option": "A",
+    "explanation": "Beta measures systematic risk, indicating how volatile a security or portfolio is compared to the broader benchmark market index (where benchmark Beta = 1.0).",
+    "source_reference": "SEBI Investor Education Foundation"
+  },
+  {
+    "id": "reg_beg_1",
+    "topic": "regulations",
+    "difficulty": "beginner",
+    "question": "What is SCORES in the context of the Indian securities market?",
+    "options": {
+      "A": "A credit scoring bureau operated by credit card companies",
+      "B": "SEBI's centralized online web-based complaint redressal portal for aggrieved investors",
+      "C": "A derivative trading algorithm used by high-frequency market makers",
+      "D": "The annual examination required to trade on the National Stock Exchange"
+    },
+    "correct_option": "B",
+    "explanation": "SCORES (SEBI Complaints Redress System) is a centralized web portal designed by SEBI for investors to lodge complaints against listed companies, brokers, and SEBI-registered intermediaries.",
+    "source_reference": "SEBI SCORES Official Portal"
+  }
+]

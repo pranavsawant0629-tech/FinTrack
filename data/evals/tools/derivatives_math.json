@@ -1,0 +1,112 @@
+{
+  "suite_id": "tools_derivatives_math",
+  "name": "Deterministic Derivatives Mathematical Engine Evaluation",
+  "category": "tools",
+  "description": "Evaluates deterministic mathematical correctness of option payoffs, breakevens, max profit/loss, and futures P&L across standard and boundary conditions.",
+  "metadata": {"version": "1.0.0", "target_accuracy": 100.0},
+  "cases": [
+    {
+      "case_id": "MATH_DER_001",
+      "category": "long_call_standard",
+      "input_data": {
+        "option_type": "call",
+        "position": "long",
+        "strike_price": 24000.0,
+        "premium": 150.0
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "strike_price": 24000.0,
+        "premium": 150.0,
+        "breakeven_price": 24150.0,
+        "max_profit": "Unlimited",
+        "max_loss": 150.0,
+        "has_feasible_breakeven": true
+      },
+      "tags": ["derivatives", "long_call", "standard"],
+      "description": "Standard Long Call: Breakeven = Strike + Premium = 24150.0, Max Loss = Premium"
+    },
+    {
+      "case_id": "MATH_DER_002",
+      "category": "long_put_standard",
+      "input_data": {
+        "option_type": "put",
+        "position": "long",
+        "strike_price": 24000.0,
+        "premium": 200.0
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "strike_price": 24000.0,
+        "premium": 200.0,
+        "breakeven_price": 23800.0,
+        "max_profit": 23800.0,
+        "max_loss": 200.0,
+        "has_feasible_breakeven": true
+      },
+      "tags": ["derivatives", "long_put", "standard"],
+      "description": "Standard Long Put: Breakeven = Strike - Premium = 23800.0"
+    },
+    {
+      "case_id": "MATH_DER_003",
+      "category": "long_put_infeasible_breakeven",
+      "input_data": {
+        "option_type": "put",
+        "position": "long",
+        "strike_price": 100.0,
+        "premium": 150.0
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "strike_price": 100.0,
+        "premium": 150.0,
+        "raw_breakeven": -50.0,
+        "has_feasible_breakeven": false,
+        "breakeven_note": "No feasible non-negative breakeven price exists (Premium exceeds Strike)",
+        "max_profit": -50.0,
+        "max_loss": 150.0
+      },
+      "tags": ["derivatives", "long_put", "boundary", "corrected_breakeven"],
+      "description": "Long Put where Premium > Strike: Breakeven is negative (-50), meaning no feasible non-negative breakeven price exists"
+    },
+    {
+      "case_id": "MATH_DER_004",
+      "category": "short_call_standard",
+      "input_data": {
+        "option_type": "call",
+        "position": "short",
+        "strike_price": 25000.0,
+        "premium": 180.0
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "strike_price": 25000.0,
+        "premium": 180.0,
+        "breakeven_price": 25180.0,
+        "max_profit": 180.0,
+        "max_loss": "Unlimited"
+      },
+      "tags": ["derivatives", "short_call", "standard"],
+      "description": "Short Call: Breakeven = 25180.0, Max Profit = 180.0, Max Loss = Unlimited"
+    },
+    {
+      "case_id": "MATH_DER_005",
+      "category": "futures_pnl_long",
+      "input_data": {
+        "contract_type": "futures",
+        "position": "long",
+        "entry_price": 24000.0,
+        "current_price": 24200.0,
+        "lot_size": 25
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "price_change": 200.0,
+        "pnl": 5000.0,
+        "pnl_percent": 0.83
+      },
+      "tags": ["derivatives", "futures", "pnl"],
+      "description": "Long Futures P&L: (24200 - 24000) * 25 = 5000.0"
+    }
+  ]
+}

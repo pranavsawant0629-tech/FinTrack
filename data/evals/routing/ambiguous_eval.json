@@ -1,0 +1,69 @@
+{
+  "suite_id": "routing_ambiguous",
+  "name": "Ambiguous & Polysemic Keywords Routing Evaluation",
+  "category": "routing",
+  "description": "Tests classifier behavior and disambiguation on isolated polysemic terms and edge cases.",
+  "metadata": {"version": "1.0.0"},
+  "cases": [
+    {
+      "case_id": "AMB_001",
+      "category": "ambiguous_keyword",
+      "query": "delta",
+      "expected_domain": "DERIVATIVES",
+      "expected_intent": "calculation",
+      "expected_outcome": "pass",
+      "tags": ["ambiguous", "derivatives"],
+      "description": "Isolated Greek term delta maps to derivatives"
+    },
+    {
+      "case_id": "AMB_002",
+      "category": "ambiguous_keyword",
+      "query": "portfolio",
+      "expected_domain": "PORTFOLIO",
+      "expected_intent": "overview",
+      "expected_outcome": "pass",
+      "tags": ["ambiguous", "portfolio"],
+      "description": "Isolated portfolio keyword maps to portfolio agent"
+    },
+    {
+      "case_id": "AMB_003",
+      "category": "ambiguous_keyword",
+      "query": "news",
+      "expected_domain": "NEWS",
+      "expected_intent": "overview",
+      "expected_outcome": "pass",
+      "tags": ["ambiguous", "news"],
+      "description": "Isolated news keyword maps to market news"
+    },
+    {
+      "case_id": "AMB_004",
+      "category": "ambiguous_keyword",
+      "query": "risk",
+      "expected_domain": "GENERAL",
+      "expected_intent": "educational_concept",
+      "expected_outcome": "pass",
+      "tags": ["ambiguous", "general"],
+      "description": "Isolated risk keyword defaults to general financial concepts"
+    },
+    {
+      "case_id": "AMB_005",
+      "category": "ambiguous_keyword",
+      "query": "investment",
+      "expected_domain": "GENERAL",
+      "expected_intent": "educational_concept",
+      "expected_outcome": "pass",
+      "tags": ["ambiguous", "general"],
+      "description": "Isolated investment keyword defaults to general concepts"
+    },
+    {
+      "case_id": "AMB_006",
+      "category": "ambiguous_keyword",
+      "query": "market",
+      "expected_domain": "GENERAL",
+      "expected_intent": "educational_concept",
+      "expected_outcome": "pass",
+      "tags": ["ambiguous", "general"],
+      "description": "Isolated market keyword defaults to general fallback"
+    }
+  ]
+}

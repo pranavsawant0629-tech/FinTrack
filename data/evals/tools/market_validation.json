@@ -1,0 +1,43 @@
+{
+  "suite_id": "tools_market_validation",
+  "name": "Market Data Anomaly & Sanity Validation Evaluation Suite",
+  "category": "tools",
+  "description": "Evaluates detection and rejection of anomalous or corrupted market data payloads (NaN, Inf, negative price, high < low, timestamp inversion).",
+  "cases": [
+    {
+      "case_id": "MV-001",
+      "input_prompt": "Validate quote payload with negative current price: {'symbol': 'TCS.NS', 'price': -3200.0, 'high': 3250.0, 'low': 3180.0, 'open': 3190.0, 'volume': 150000}",
+      "category": "tools",
+      "expected_output": "INVALID_PRICE_NEGATIVE",
+      "tags": ["market_validation", "negative_price", "anomaly"]
+    },
+    {
+      "case_id": "MV-002",
+      "input_prompt": "Validate quote payload where high is less than low: {'symbol': 'INFY.NS', 'price': 1500.0, 'high': 1480.0, 'low': 1520.0, 'open': 1500.0, 'volume': 80000}",
+      "category": "tools",
+      "expected_output": "INVALID_HIGH_LESS_THAN_LOW",
+      "tags": ["market_validation", "high_low_inversion", "anomaly"]
+    },
+    {
+      "case_id": "MV-003",
+      "input_prompt": "Validate historical bar with NaN close price: {'symbol': 'RELIANCE.NS', 'timestamp': '2026-09-10T10:00:00Z', 'open': 2950.0, 'high': 2965.0, 'low': 2940.0, 'close': 'NaN', 'volume': 200000}",
+      "category": "tools",
+      "expected_output": "INVALID_PRICE_NAN",
+      "tags": ["market_validation", "nan_price", "anomaly"]
+    },
+    {
+      "case_id": "MV-004",
+      "input_prompt": "Validate price payload with Infinite volume or price: {'symbol': 'HDFCBANK.NS', 'price': 'Infinity', 'high': 1650.0, 'low': 1620.0, 'open': 1630.0, 'volume': 500000}",
+      "category": "tools",
+      "expected_output": "INVALID_PRICE_INF",
+      "tags": ["market_validation", "inf_price", "anomaly"]
+    },
+    {
+      "case_id": "MV-005",
+      "input_prompt": "Validate clean quote payload with valid OHLCV: {'symbol': 'SBIN.NS', 'price': 815.0, 'high': 822.0, 'low': 810.0, 'open': 812.0, 'volume': 450000}",
+      "category": "tools",
+      "expected_output": "VALID_QUOTE",
+      "tags": ["market_validation", "clean_quote", "positive_control"]
+    }
+  ]
+}

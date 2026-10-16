@@ -1,0 +1,38 @@
+{
+  "suite_id": "rag_out_of_corpus",
+  "name": "Out-of-Corpus Strict Rejection & Ungrounded State Evaluation",
+  "category": "rag",
+  "description": "Evaluates strict ungrounded fallback and LLM-bypass for topics completely absent from the authoritative corpus.",
+  "metadata": {"version": "1.0.0", "target_threshold": 100.0},
+  "cases": [
+    {
+      "case_id": "RAG_OOC_001",
+      "category": "non_financial",
+      "query": "How do mRNA vaccines instruct human cells to produce spike proteins?",
+      "expected_outcome": "ungrounded",
+      "expected_grounding_status": "ungrounded",
+      "forbidden_tokens": ["primary market", "SEBI", "NIFTY"],
+      "tags": ["rag", "out_of_corpus", "non_financial"],
+      "description": "Completely non-financial biological query must trigger ungrounded state"
+    },
+    {
+      "case_id": "RAG_OOC_002",
+      "category": "out_of_scope_finance",
+      "query": "What are the tax implications of Delaware statutory trusts under IRS section 1031?",
+      "expected_outcome": "ungrounded",
+      "expected_grounding_status": "ungrounded",
+      "forbidden_tokens": ["SEBI recommends", "Tier 1"],
+      "tags": ["rag", "out_of_corpus", "us_tax"],
+      "description": "US-specific IRS tax regulation outside Indian SEBI investor education scope"
+    },
+    {
+      "case_id": "RAG_OOC_003",
+      "category": "fabricated_financial_term",
+      "query": "Explain how quantum hyper-liquidity synthetics settle on Venusian exchanges",
+      "expected_outcome": "ungrounded",
+      "expected_grounding_status": "ungrounded",
+      "tags": ["rag", "out_of_corpus", "gibberish"],
+      "description": "Nonsense financial terminology must trigger ungrounded response"
+    }
+  ]
+}

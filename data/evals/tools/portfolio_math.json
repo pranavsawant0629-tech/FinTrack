@@ -1,0 +1,55 @@
+{
+  "suite_id": "tools_portfolio_math",
+  "name": "Deterministic Portfolio Analytics & Simulation Evaluation",
+  "category": "tools",
+  "description": "Evaluates portfolio accounting metrics, cash balance separation, asset allocation percentage sums, and non-mutating what-if price shocks.",
+  "metadata": {"version": "1.0.0", "target_accuracy": 100.0},
+  "cases": [
+    {
+      "case_id": "MATH_PORT_001",
+      "category": "metrics_calculation",
+      "input_data": {
+        "cash_balance": 20000.0,
+        "holdings": [
+          {"symbol": "TCS", "quantity": 10.0, "average_buy_price": 3500.0, "current_price": 4000.0, "asset_type": "equity"},
+          {"symbol": "RELIANCE", "quantity": 20.0, "average_buy_price": 2500.0, "current_price": 2700.0, "asset_type": "equity"}
+        ]
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "securities_cost_basis": 85000.0,
+        "securities_market_value": 94000.0,
+        "cash_balance": 20000.0,
+        "total_portfolio_value": 114000.0,
+        "unrealized_pnl": 9000.0,
+        "unrealized_pnl_pct": 10.59,
+        "allocation_sum_check": 100.0
+      },
+      "tags": ["portfolio", "accounting", "allocation"],
+      "description": "Portfolio metrics: Total value = 94,000 + 20,000 = 114,000; cost basis = 85,000"
+    },
+    {
+      "case_id": "MATH_PORT_002",
+      "category": "what_if_simulation",
+      "input_data": {
+        "cash_balance": 10000.0,
+        "holdings": [
+          {"symbol": "TCS", "quantity": 10.0, "average_buy_price": 3500.0, "current_price": 4000.0, "asset_type": "equity"}
+        ],
+        "simulation_target": "TCS",
+        "simulation_pct": -10.0
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "original_total": 50000.0,
+        "simulated_price": 3600.0,
+        "simulated_holding_value": 36000.0,
+        "simulated_total": 46000.0,
+        "portfolio_delta_value": -4000.0,
+        "portfolio_delta_pct": -8.0
+      },
+      "tags": ["portfolio", "what_if", "stress_test"],
+      "description": "What-if simulation: 10% drop in TCS causes 4,000 loss on 50,000 portfolio (-8.0%)"
+    }
+  ]
+}

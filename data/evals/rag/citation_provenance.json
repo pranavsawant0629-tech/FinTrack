@@ -1,0 +1,45 @@
+{
+  "suite_id": "rag_citation_provenance",
+  "name": "Citation Resolution and Provenance Integrity Evaluation",
+  "category": "rag",
+  "description": "Evaluates deterministic citation index resolution, invalid marker stripping, and claim-to-evidence provenance.",
+  "metadata": {"version": "1.0.0", "target_resolution_rate": 100.0},
+  "cases": [
+    {
+      "case_id": "CITE_PROV_001",
+      "category": "citation_resolution",
+      "query": "What is the primary market?",
+      "input_data": {
+        "raw_answer": "The primary market provides an avenue for companies to raise capital from the public [1].",
+        "mock_chunks": [
+          {"chunk_id": "chunk_pm_01", "doc_id": "primarymarkets", "title": "Beginner's Guide to Primary Market"}
+        ]
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "resolved_citation_ids": [1],
+        "resolved_doc_ids": ["primarymarkets"]
+      },
+      "tags": ["citation", "provenance", "resolution"],
+      "description": "Valid marker [1] maps strictly to chunk 1"
+    },
+    {
+      "case_id": "CITE_PROV_002",
+      "category": "invalid_marker_stripping",
+      "query": "Explain mutual funds",
+      "input_data": {
+        "raw_answer": "Mutual funds pool money from investors [1] and invest in diversified securities [99].",
+        "mock_chunks": [
+          {"chunk_id": "chunk_mf_01", "doc_id": "MFunds", "title": "Introduction to Mutual Funds"}
+        ]
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "resolved_citation_ids": [1],
+        "stripped_markers": [99]
+      },
+      "tags": ["citation", "invalid_marker", "stripping"],
+      "description": "Hallucinated citation marker [99] must be stripped and excluded from citations list"
+    }
+  ]
+}

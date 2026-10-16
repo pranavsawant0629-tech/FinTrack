@@ -1,0 +1,53 @@
+{
+  "suite_id": "rag_retrieval_relevance",
+  "name": "Authoritative RAG Retrieval Relevance Evaluation",
+  "category": "rag",
+  "description": "Evaluates semantic retrieval relevance against the locked SEBI knowledge base in Qdrant.",
+  "metadata": {"version": "1.0.0", "target_recall_at_3": 85.0},
+  "cases": [
+    {
+      "case_id": "RAG_REL_001",
+      "category": "primary_market",
+      "query": "What is an Initial Public Offering in the primary market?",
+      "expected_outcome": "pass",
+      "expected_grounding_status": "fully_grounded",
+      "expected_chunks": ["primarymarkets"],
+      "required_tokens": ["primary market", "IPO"],
+      "tags": ["rag", "relevance", "primary_market"],
+      "description": "Retrieval for primary market IPO concept"
+    },
+    {
+      "case_id": "RAG_REL_002",
+      "category": "mutual_funds",
+      "query": "What is a mutual fund and how does NAV work according to SEBI?",
+      "expected_outcome": "pass",
+      "expected_grounding_status": "fully_grounded",
+      "expected_chunks": ["MFunds"],
+      "required_tokens": ["mutual fund", "NAV"],
+      "tags": ["rag", "relevance", "mutual_funds"],
+      "description": "Retrieval for mutual fund fundamentals and Net Asset Value"
+    },
+    {
+      "case_id": "RAG_REL_003",
+      "category": "etf",
+      "query": "What are Exchange Traded Funds and how do they differ from open ended funds?",
+      "expected_outcome": "pass",
+      "expected_grounding_status": "fully_grounded",
+      "expected_chunks": ["Introduction_to_ETFs"],
+      "required_tokens": ["ETF", "exchange traded"],
+      "tags": ["rag", "relevance", "etf"],
+      "description": "Retrieval for ETF concepts"
+    },
+    {
+      "case_id": "RAG_REL_004",
+      "category": "corporate_actions",
+      "query": "What is a bonus issue and what is a stock split?",
+      "expected_outcome": "pass",
+      "expected_grounding_status": "fully_grounded",
+      "expected_chunks": ["Corporate_Actions_Dividends_Bonus_Splits"],
+      "required_tokens": ["bonus", "split"],
+      "tags": ["rag", "relevance", "corporate_actions"],
+      "description": "Retrieval for corporate actions and share splits"
+    }
+  ]
+}

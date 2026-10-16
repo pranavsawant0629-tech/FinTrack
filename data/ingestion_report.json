@@ -1,0 +1,176 @@
+{
+  "status": "success",
+  "manifest_count": 16,
+  "downloaded_count": 0,
+  "cached_count": 16,
+  "accepted_count": 16,
+  "rejected_count": 0,
+  "skipped_count": 0,
+  "total_chunks_stored": 155,
+  "qdrant_total_count": 155,
+  "elapsed_seconds": 29.58,
+  "accepted_documents": [
+    {
+      "title": "Beginner's Guide to Primary Market",
+      "filename": "primarymarkets.pdf",
+      "doc_id": "primarymarkets",
+      "source": "SEBI",
+      "chunks": 25,
+      "topic": "Primary Market",
+      "pages": 27,
+      "characters": 50906
+    },
+    {
+      "title": "Guide to Secondary Markets",
+      "filename": "Secondaryma.pdf",
+      "doc_id": "Secondaryma",
+      "source": "SEBI",
+      "chunks": 3,
+      "topic": "Secondary Market",
+      "pages": 3,
+      "characters": 6167
+    },
+    {
+      "title": "Introduction to Mutual Funds",
+      "filename": "MFunds.pdf",
+      "doc_id": "MFunds",
+      "source": "SEBI",
+      "chunks": 4,
+      "topic": "Mutual Funds",
+      "pages": 4,
+      "characters": 7556
+    },
+    {
+      "title": "Introduction to Exchange Traded Funds (ETFs)",
+      "filename": "Introduction_to_ETFs.pdf",
+      "doc_id": "Introduction_to_ETFs",
+      "source": "SEBI",
+      "chunks": 5,
+      "topic": "Exchange Traded Funds",
+      "pages": 27,
+      "characters": 11548
+    },
+    {
+      "title": "Corporate Actions - Dividends, Bonus, Splits etc.",
+      "filename": "Corporate_Actions_Dividends_Bonus_Splits.pdf",
+      "doc_id": "Corporate_Actions_Dividends_Bonus_Splits",
+      "source": "SEBI",
+      "chunks": 3,
+      "topic": "Corporate Actions",
+      "pages": 19,
+      "characters": 7350
+    },
+    {
+      "title": "How to Buy and Sell Shares in Stock Exchange",
+      "filename": "How_to_Buy_and_Sell_Shares_in_Stock_Exchange.pdf",
+      "doc_id": "How_to_Buy_and_Sell_Shares_in_Stock_Exchange",
+      "source": "SEBI",
+      "chunks": 12,
+      "topic": "Trading Mechanism",
+      "pages": 79,
+      "characters": 29268
+    },
+    {
+      "title": "Guide to Corporate Bonds",
+      "filename": "corporatebonds.pdf",
+      "doc_id": "corporatebonds",
+      "source": "SEBI",
+      "chunks": 11,
+      "topic": "Fixed Income",
+      "pages": 17,
+      "characters": 23703
+    },
+    {
+      "title": "Investor Grievance Redressal Mechanism & SCORES",
+      "filename": "igrbrochure.pdf",
+      "doc_id": "igrbrochure",
+      "source": "SEBI",
+      "chunks": 7,
+      "topic": "Investor Protection",
+      "pages": 8,
+      "characters": 18760
+    },
+    {
+      "title": "Do's and Don'ts for Investors - Investment Advisers",
+      "filename": "dos-and-donts-for-investors-investment-advisers.pdf",
+      "doc_id": "dos-and-donts-for-investors-investment-advisers",
+      "source": "SEBI",
+      "chunks": 1,
+      "topic": "Investor Safety",
+      "pages": 2,
+      "characters": 2500
+    },
+    {
+      "title": "Module on Derivative Segment",
+      "filename": "Module_on_Derivative_Segment.pdf",
+      "doc_id": "Module_on_Derivative_Segment",
+      "source": "SEBI",
+      "chunks": 5,
+      "topic": "Derivatives",
+      "pages": 25,
+      "characters": 11377
+    },
+    {
+      "title": "Introduction to Real Estate Investment Trusts (REITs)",
+      "filename": "SEBI_REITs_Introduction.pdf",
+      "doc_id": "SEBI_REITs_Introduction",
+      "source": "SEBI",
+      "chunks": 5,
+      "topic": "Real Estate Investment Trusts",
+      "pages": 21,
+      "characters": 9941
+    },
+    {
+      "title": "Introduction to Infrastructure Investment Trusts (InvITs)",
+      "filename": "SEBI_InvITs_Introduction.pdf",
+      "doc_id": "SEBI_InvITs_Introduction",
+      "source": "SEBI",
+      "chunks": 5,
+      "topic": "Infrastructure Investment Trusts",
+      "pages": 19,
+      "characters": 9942
+    },
+    {
+      "title": "KYC and Account Opening in Securities Market",
+      "filename": "SEBI_KYC_Account_Opening.pdf",
+      "doc_id": "SEBI_KYC_Account_Opening",
+      "source": "SEBI",
+      "chunks": 9,
+      "topic": "KYC & Account Opening",
+      "pages": 56,
+      "characters": 21638
+    },
+    {
+      "title": "Analysis of Profit and Loss of Individual Traders Dealing in Equity F&O Segment",
+      "filename": "SEBI_Derivatives_Study_2023.pdf",
+      "doc_id": "SEBI_Derivatives_Study_2023",
+      "source": "SEBI",
+      "chunks": 24,
+      "topic": "Derivatives Risk Analysis",
+      "pages": 33,
+      "characters": 47306
+    },
+    {
+      "title": "Financial Awareness Messages (FAME) 2024",
+      "filename": "RBI_FAME_2024.pdf",
+      "doc_id": "RBI_FAME_2024",
+      "source": "RBI",
+      "chunks": 24,
+      "topic": "Banking & Financial Literacy",
+      "pages": 60,
+      "characters": 55244
+    },
+    {
+      "title": "AMFI Investor Awareness Program Guide",
+      "filename": "AMFI_Investor_Awareness_Guide.pdf",
+      "doc_id": "AMFI_Investor_Awareness_Guide",
+      "source": "AMFI",
+      "chunks": 12,
+      "topic": "Mutual Funds & Financial Planning",
+      "pages": 73,
+      "characters": 27635
+    }
+  ],
+  "rejected_documents": [],
+  "skipped_documents": []
+}

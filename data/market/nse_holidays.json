@@ -1,0 +1,131 @@
+{
+  "year": 2026,
+  "exchange": "NSE",
+  "segment": "Capital Market",
+  "circular_reference": "NSE/CMTR/71775 dated December 12, 2025",
+  "source_url": "https://www.nseindia.com",
+  "verified_against": "NSE Official Circular Ref No: NSE/CMTR/71775",
+  "trading_holidays": [
+    {
+      "date": "2026-01-15",
+      "day": "Thursday",
+      "description": "Municipal Corporation Election - Maharashtra",
+      "is_weekend": false
+    },
+    {
+      "date": "2026-01-26",
+      "day": "Monday",
+      "description": "Republic Day",
+      "is_weekend": false
+    },
+    {
+      "date": "2026-02-15",
+      "day": "Sunday",
+      "description": "Mahashivratri",
+      "is_weekend": true
+    },
+    {
+      "date": "2026-03-03",
+      "day": "Tuesday",
+      "description": "Holi",
+      "is_weekend": false
+    },
+    {
+      "date": "2026-03-21",
+      "day": "Saturday",
+      "description": "Id-Ul-Fitr (Ramadan Eid)",
+      "is_weekend": true
+    },
+    {
+      "date": "2026-03-26",
+      "day": "Thursday",
+      "description": "Shri Ram Navami",
+      "is_weekend": false
+    },
+    {
+      "date": "2026-03-31",
+      "day": "Tuesday",
+      "description": "Shri Mahavir Jayanti",
+      "is_weekend": false
+    },
+    {
+      "date": "2026-04-03",
+      "day": "Friday",
+      "description": "Good Friday",
+      "is_weekend": false
+    },
+    {
+      "date": "2026-04-14",
+      "day": "Tuesday",
+      "description": "Dr. Baba Saheb Ambedkar Jayanti",
+      "is_weekend": false
+    },
+    {
+      "date": "2026-05-01",
+      "day": "Friday",
+      "description": "Maharashtra Day",
+      "is_weekend": false
+    },
+    {
+      "date": "2026-05-28",
+      "day": "Thursday",
+      "description": "Bakri Id",
+      "is_weekend": false
+    },
+    {
+      "date": "2026-06-26",
+      "day": "Friday",
+      "description": "Muharram",
+      "is_weekend": false
+    },
+    {
+      "date": "2026-08-15",
+      "day": "Saturday",
+      "description": "Independence Day",
+      "is_weekend": true
+    },
+    {
+      "date": "2026-09-14",
+      "day": "Monday",
+      "description": "Ganesh Chaturthi",
+      "is_weekend": false
+    },
+    {
+      "date": "2026-10-02",
+      "day": "Friday",
+      "description": "Mahatma Gandhi Jayanti",
+      "is_weekend": false
+    },
+    {
+      "date": "2026-10-20",
+      "day": "Tuesday",
+      "description": "Dussehra",
+      "is_weekend": false
+    },
+    {
+      "date": "2026-11-08",
+      "day": "Sunday",
+      "description": "Diwali Laxmi Pujan (Muhurat Trading session held)",
+      "is_weekend": true,
+      "muhurat_trading": true
+    },
+    {
+      "date": "2026-11-10",
+      "day": "Tuesday",
+      "description": "Diwali-Balipratipada",
+      "is_weekend": false
+    },
+    {
+      "date": "2026-11-24",
+      "day": "Tuesday",
+      "description": "Prakash Gurpurb Sri Guru Nanak Dev",
+      "is_weekend": false
+    },
+    {
+      "date": "2026-12-25",
+      "day": "Friday",
+      "description": "Christmas",
+      "is_weekend": false
+    }
+  ]
+}

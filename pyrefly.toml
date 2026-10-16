@@ -1,0 +1,2 @@
+python-interpreter-path = ".venv-finova/Scripts/python.exe"
+search-path = ["."]

@@ -1,0 +1,106 @@
+{
+  "report_id": "eval_report_1792163378",
+  "timestamp": "2026-10-16T15:09:38.731742+00:00",
+  "mode": "offline",
+  "total_suites": 1,
+  "total_cases": 3,
+  "passed_cases": 2,
+  "failed_cases": 1,
+  "skipped_cases": 0,
+  "error_cases": 0,
+  "overall_accuracy": 0.6667,
+  "duration_seconds": 1.76,
+  "baseline_snapshot": {
+    "phase": "Phase 6 Locked",
+    "phase_6_passed": 378,
+    "phase_6_skipped": 1,
+    "phase_6_failed": 0,
+    "phase_6_total": 379,
+    "status": "locked_baseline",
+    "skipped_test_id": "tests/test_market_providers.py::test_yfinance_provider_get_historical_summary",
+    "skipped_reason": "Yahoo Finance returned an incomplete intraday bar with NaN close price / ProviderUnavailableError",
+    "full_pyright_errors": 2,
+    "pyright_baseline_file": "app/rag/embeddings.py",
+    "pyright_baseline_details": "FastEmbed Generator type annotation missing type arguments and generator value iteration"
+  },
+  "suite_results": [
+    {
+      "suite_id": "rag_out_of_corpus",
+      "category": "rag",
+      "total_cases": 3,
+      "passed_cases": 2,
+      "failed_cases": 1,
+      "skipped_cases": 0,
+      "error_cases": 0,
+      "accuracy": 0.6667,
+      "metric_results": [
+        {
+          "metric_name": "rag_out_of_corpus_accuracy",
+          "category": "rag",
+          "score": 0.6667,
+          "total_cases": 3,
+          "passed_cases": 2,
+          "failed_cases": 1,
+          "skipped_cases": 0,
+          "error_cases": 0,
+          "threshold": 0.85,
+          "passed": false,
+          "details": {}
+        }
+      ],
+      "case_results": [
+        {
+          "case_id": "RAG_OOC_001",
+          "status": "PASS",
+          "category": "non_financial",
+          "input_prompt": "How do mRNA vaccines instruct human cells to produce spike proteins?",
+          "expected_output": "ungrounded",
+          "actual_output": "ungrounded",
+          "error_message": null,
+          "message": "",
+          "latency_ms": 8.169099994120188,
+          "metadata": {}
+        },
+        {
+          "case_id": "RAG_OOC_002",
+          "status": "FAIL",
+          "category": "out_of_scope_finance",
+          "input_prompt": "What are the tax implications of Delaware statutory trusts under IRS section 1031?",
+          "expected_output": "ungrounded",
+          "actual_output": "partially_grounded",
+          "error_message": "expected ungrounded, got partially_grounded (chunks retrieved: 1)",
+          "message": "",
+          "latency_ms": 10.019699999247678,
+          "metadata": {}
+        },
+        {
+          "case_id": "RAG_OOC_003",
+          "status": "PASS",
+          "category": "fabricated_financial_term",
+          "input_prompt": "Explain how quantum hyper-liquidity synthetics settle on Venusian exchanges",
+          "expected_output": "ungrounded",
+          "actual_output": "ungrounded",
+          "error_message": null,
+          "message": "",
+          "latency_ms": 7.454400009009987,
+          "metadata": {}
+        }
+      ]
+    }
+  ],
+  "overall_metrics": [
+    {
+      "metric_name": "rag_out_of_corpus_accuracy",
+      "category": "rag",
+      "score": 0.6667,
+      "total_cases": 3,
+      "passed_cases": 2,
+      "failed_cases": 1,
+      "skipped_cases": 0,
+      "error_cases": 0,
+      "threshold": 0.85,
+      "passed": false,
+      "details": {}
+    }
+  ]
+}
