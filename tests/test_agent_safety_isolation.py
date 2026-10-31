@@ -30,6 +30,7 @@ from app.agents.equity.agent import EquityAgent
 from app.agents.news.agent import NewsAgent
 from app.agents.personal_finance.agent import PersonalFinanceAgent
 from app.agents.portfolio.agent import PortfolioAgent
+from app.llm.llm_client import LLMClient
 from app.router.composer import (
     CRYPTO_RISK_NOTICE,
     PORTFOLIO_SIMULATION_NOTICE,
@@ -237,157 +238,308 @@ def test_non_string_input_safe_refusal():
 
 def test_equity_agent_zero_downstream_calls_on_blocked_query():
     """Blocked queries on EquityAgent must trigger 0 LLM, 0 RAG, and 0 market calls."""
-    eq = EquityAgent()
-    eq.rag_service.query_with_sources = MagicMock()
-    eq.rag_service.retrieve = MagicMock()
-    eq.market_service.get_quote = MagicMock()
-    eq.market_service.get_market_status = MagicMock()
-    if hasattr(eq.rag_service, "llm") and eq.rag_service.llm:
-        eq.rag_service.llm.generate = MagicMock()
+    mock_llm = MagicMock(spec=LLMClient)
+    mock_rag = MagicMock()
+    mock_rag.llm = mock_llm
+    mock_market = MagicMock()
+    mock_classifier = MagicMock()
+
+    eq = EquityAgent(
+        rag=mock_rag,
+        market_service=mock_market,
+        intent_classifier=mock_classifier,
+    )
 
     resp = eq.ask("Which stock should I buy for quick gains?")
-    assert "educational platform" in resp.answer.lower()
-    assert eq.rag_service.query_with_sources.call_count == 0
-    assert eq.rag_service.retrieve.call_count == 0
-    assert eq.market_service.get_quote.call_count == 0
-    assert eq.market_service.get_market_status.call_count == 0
-    if hasattr(eq.rag_service, "llm") and eq.rag_service.llm:
-        assert eq.rag_service.llm.generate.call_count == 0
+    assert "educational platform" in resp.answer.lower() or "cannot provide" in resp.answer.lower()
+    assert mock_llm.chat.call_count == 0
+    assert mock_rag.generate_answer.call_count == 0
+    assert mock_rag.query_with_sources.call_count == 0
+    assert mock_rag.retrieve.call_count == 0
+    assert mock_market.get_quote.call_count == 0
+    assert mock_market.get_market_status.call_count == 0
+    assert mock_classifier.classify.call_count == 0
 
 
 def test_derivatives_agent_zero_downstream_calls_on_blocked_query():
     """Blocked queries on DerivativesAgent must trigger 0 LLM and 0 RAG calls."""
-    der = DerivativesAgent()
-    der.rag.query_with_sources = MagicMock()
-    der.rag.retrieve = MagicMock()
-    if hasattr(der, "llm") and der.llm:
-        der.llm.generate = MagicMock()
+    mock_llm = MagicMock(spec=LLMClient)
+    mock_rag = MagicMock()
+    mock_rag.llm = mock_llm
+
+    der = DerivativesAgent(rag=mock_rag, llm=mock_llm)
 
     resp = der.ask("Should I buy CE or PE on Nifty?")
-    assert "educational platform" in resp.answer.lower() or "disruption" in resp.answer.lower()
-    assert der.rag.query_with_sources.call_count == 0
-    assert der.rag.retrieve.call_count == 0
-    if hasattr(der, "llm") and der.llm:
-        assert der.llm.generate.call_count == 0
+    assert "educational platform" in resp.answer.lower() or "disruption" in resp.answer.lower() or "cannot provide" in resp.answer.lower()
+    assert mock_llm.chat.call_count == 0
+    assert mock_rag.generate_answer.call_count == 0
+    assert mock_rag.query_with_sources.call_count == 0
+    assert mock_rag.retrieve.call_count == 0
 
 
 def test_crypto_agent_zero_downstream_calls_on_blocked_query():
     """Blocked queries on CryptoAgent must trigger 0 LLM and 0 crypto service calls."""
-    cr = CryptoAgent()
-    cr.crypto_service.get_quote = MagicMock()
-    if hasattr(cr, "llm") and cr.llm:
-        cr.llm.generate = MagicMock()
+    mock_llm = MagicMock(spec=LLMClient)
+    mock_crypto = MagicMock()
+    cr = CryptoAgent(crypto_service=mock_crypto, llm=mock_llm)
 
     resp = cr.ask("Which crypto should I buy today?")
-    assert "educational platform" in resp.answer.lower()
-    assert cr.crypto_service.get_quote.call_count == 0
-    if hasattr(cr, "llm") and cr.llm:
-        assert cr.llm.generate.call_count == 0
+    assert "educational platform" in resp.answer.lower() or "cannot provide" in resp.answer.lower()
+    assert mock_llm.chat.call_count == 0
+    assert mock_crypto.get_quote.call_count == 0
 
 
 def test_personal_finance_agent_zero_downstream_calls_on_blocked_query():
     """Blocked queries on PersonalFinanceAgent must trigger 0 LLM calls."""
-    pf = PersonalFinanceAgent()
-    if hasattr(pf, "llm") and pf.llm:
-        pf.llm.generate = MagicMock()
+    mock_llm = MagicMock(spec=LLMClient)
+    pf = PersonalFinanceAgent(llm=mock_llm)
 
     resp = pf.ask("Where should I invest my money?")
-    assert "educational platform" in resp.answer.lower()
-    if hasattr(pf, "llm") and pf.llm:
-        assert pf.llm.generate.call_count == 0
+    assert "educational platform" in resp.answer.lower() or "cannot provide" in resp.answer.lower()
+    assert mock_llm.chat.call_count == 0
 
 
 def test_portfolio_agent_zero_downstream_calls_on_blocked_query():
     """Blocked queries on PortfolioAgent must trigger 0 LLM and 0 portfolio service calls."""
-    port = PortfolioAgent()
-    port.service.get_portfolio = MagicMock()
-    if hasattr(port, "llm") and port.llm:
-        port.llm.generate = MagicMock()
+    mock_llm = MagicMock(spec=LLMClient)
+    mock_port_svc = MagicMock()
+    port = PortfolioAgent(service=mock_port_svc, llm=mock_llm)
 
     resp = port.ask("Tell me how to allocate my exact 10 lakh portfolio.")
-    assert "educational platform" in resp.answer.lower()
-    assert port.service.get_portfolio.call_count == 0
-    if hasattr(port, "llm") and port.llm:
-        assert port.llm.generate.call_count == 0
+    assert "educational platform" in resp.answer.lower() or "cannot provide" in resp.answer.lower()
+    assert mock_llm.chat.call_count == 0
+    assert mock_port_svc.get_portfolio.call_count == 0
+    assert mock_port_svc.calculate_metrics.call_count == 0
 
 
 def test_news_agent_zero_downstream_calls_on_blocked_query():
-    """Blocked queries on NewsAgent must trigger 0 ticker news and 0 macro news calls."""
-    news = NewsAgent()
-    news._service.get_ticker_news = MagicMock()
-    news._service.get_macro_news = MagicMock()
-    if hasattr(news, "_llm") and news._llm:
-        news._llm.generate = MagicMock()
+    """Blocked queries on NewsAgent must trigger 0 LLM, 0 ticker news, and 0 macro news calls."""
+    mock_llm = MagicMock(spec=LLMClient)
+    mock_news_svc = MagicMock()
+    news = NewsAgent(service=mock_news_svc, llm=mock_llm)
 
     resp = news.ask("Which stock should I buy based on the news?")
     ans = _extract_answer_text(resp).lower()
     assert "educational" in ans or "safety" in ans or "cannot" in ans
-    assert news._service.get_ticker_news.call_count == 0
-    assert news._service.get_macro_news.call_count == 0
-    if hasattr(news, "_llm") and news._llm:
-        assert news._llm.generate.call_count == 0
+    assert mock_llm.chat.call_count == 0
+    assert mock_news_svc.get_ticker_news.call_count == 0
+    assert mock_news_svc.get_macro_news.call_count == 0
 
 
 def test_all_agents_zero_downstream_calls_on_oversized_query():
-    """Oversized inputs must return safe refusals without executing downstream operations."""
+    """
+    Oversized inputs exceeding MAX_QUERY_LENGTH must return safe refusals
+    with zero downstream LLM, RAG, market, crypto, portfolio, or news calls across ALL six agents.
+    """
     oversized = "What is compound interest? " + "Z" * (MAX_QUERY_LENGTH + 200)
 
-    # Equity
-    eq = EquityAgent()
-    eq.market_service.get_quote = MagicMock()
+    # 1. EquityAgent
+    mock_eq_llm = MagicMock(spec=LLMClient)
+    mock_eq_rag = MagicMock()
+    mock_eq_rag.llm = mock_eq_llm
+    mock_eq_market = MagicMock()
+    mock_eq_classifier = MagicMock()
+    eq = EquityAgent(
+        rag=mock_eq_rag,
+        market_service=mock_eq_market,
+        intent_classifier=mock_eq_classifier,
+    )
     r1 = eq.ask(oversized)
-    assert eq.market_service.get_quote.call_count == 0
     assert "exceeds" in r1.answer or "educational" in r1.answer
+    assert mock_eq_llm.chat.call_count == 0
+    assert mock_eq_rag.generate_answer.call_count == 0
+    assert mock_eq_rag.query_with_sources.call_count == 0
+    assert mock_eq_rag.retrieve.call_count == 0
+    assert mock_eq_market.get_quote.call_count == 0
+    assert mock_eq_market.get_market_status.call_count == 0
+    assert mock_eq_classifier.classify.call_count == 0
 
-    # Derivatives
-    der = DerivativesAgent()
-    der.rag.query_with_sources = MagicMock()
+    # 2. DerivativesAgent
+    mock_der_llm = MagicMock(spec=LLMClient)
+    mock_der_rag = MagicMock()
+    mock_der_rag.llm = mock_der_llm
+    der = DerivativesAgent(rag=mock_der_rag, llm=mock_der_llm)
     r2 = der.ask(oversized)
-    assert der.rag.query_with_sources.call_count == 0
+    assert "exceeds" in r2.answer or "educational" in r2.answer
+    assert mock_der_llm.chat.call_count == 0
+    assert mock_der_rag.generate_answer.call_count == 0
+    assert mock_der_rag.query_with_sources.call_count == 0
+    assert mock_der_rag.retrieve.call_count == 0
 
-    # Crypto
-    cr = CryptoAgent()
-    cr.crypto_service.get_quote = MagicMock()
+    # 3. CryptoAgent
+    mock_cr_llm = MagicMock(spec=LLMClient)
+    mock_crypto_svc = MagicMock()
+    cr = CryptoAgent(crypto_service=mock_crypto_svc, llm=mock_cr_llm)
     r3 = cr.ask(oversized)
-    assert cr.crypto_service.get_quote.call_count == 0
+    assert "exceeds" in r3.answer or "educational" in r3.answer
+    assert mock_cr_llm.chat.call_count == 0
+    assert mock_crypto_svc.get_quote.call_count == 0
 
-    # Portfolio
-    port = PortfolioAgent()
-    port.service.get_portfolio = MagicMock()
-    r4 = port.ask(oversized)
-    assert port.service.get_portfolio.call_count == 0
+    # 4. PersonalFinanceAgent
+    mock_pf_llm = MagicMock(spec=LLMClient)
+    pf = PersonalFinanceAgent(llm=mock_pf_llm)
+    r4 = pf.ask(oversized)
+    assert "exceeds" in r4.answer or "educational" in r4.answer
+    assert mock_pf_llm.chat.call_count == 0
 
-    # News
-    news = NewsAgent()
-    news._service.get_ticker_news = MagicMock()
-    r5 = news.ask(oversized)
-    assert news._service.get_ticker_news.call_count == 0
+    # 5. PortfolioAgent
+    mock_port_llm = MagicMock(spec=LLMClient)
+    mock_port_svc = MagicMock()
+    port = PortfolioAgent(service=mock_port_svc, llm=mock_port_llm)
+    r5 = port.ask(oversized)
+    assert "exceeds" in r5.answer or "educational" in r5.answer
+    assert mock_port_llm.chat.call_count == 0
+    assert mock_port_svc.get_portfolio.call_count == 0
+    assert mock_port_svc.calculate_metrics.call_count == 0
+
+    # 6. NewsAgent
+    mock_news_llm = MagicMock(spec=LLMClient)
+    mock_news_svc = MagicMock()
+    news = NewsAgent(service=mock_news_svc, llm=mock_news_llm)
+    r6 = news.ask(oversized)
+    ans6 = _extract_answer_text(r6).lower()
+    assert "exceeds" in ans6 or "educational" in ans6 or "cannot" in ans6
+    assert mock_news_llm.chat.call_count == 0
+    assert mock_news_svc.get_ticker_news.call_count == 0
+    assert mock_news_svc.get_macro_news.call_count == 0
 
 
 def test_all_agents_zero_downstream_calls_on_null_byte_query():
-    """Null-byte inputs must be rejected as malformed with zero tool/LLM calls."""
+    """
+    Null-byte inputs must be rejected as malformed with zero downstream
+    LLM, RAG, market, crypto, portfolio, or news calls across ALL six agents.
+    """
     null_query = "What is Nifty \x00 index?"
 
-    eq = EquityAgent()
-    eq.market_service.get_quote = MagicMock()
+    # 1. EquityAgent
+    mock_eq_llm = MagicMock(spec=LLMClient)
+    mock_eq_rag = MagicMock()
+    mock_eq_rag.llm = mock_eq_llm
+    mock_eq_market = MagicMock()
+    mock_eq_classifier = MagicMock()
+    eq = EquityAgent(
+        rag=mock_eq_rag,
+        market_service=mock_eq_market,
+        intent_classifier=mock_eq_classifier,
+    )
     r1 = eq.ask(null_query)
-    assert eq.market_service.get_quote.call_count == 0
     assert "invalid" in r1.answer.lower() or "educational" in r1.answer.lower()
+    assert mock_eq_llm.chat.call_count == 0
+    assert mock_eq_rag.generate_answer.call_count == 0
+    assert mock_eq_rag.query_with_sources.call_count == 0
+    assert mock_eq_rag.retrieve.call_count == 0
+    assert mock_eq_market.get_quote.call_count == 0
+    assert mock_eq_market.get_market_status.call_count == 0
+    assert mock_eq_classifier.classify.call_count == 0
 
-    cr = CryptoAgent()
-    cr.crypto_service.get_quote = MagicMock()
-    r2 = cr.ask(null_query)
-    assert cr.crypto_service.get_quote.call_count == 0
+    # 2. DerivativesAgent
+    mock_der_llm = MagicMock(spec=LLMClient)
+    mock_der_rag = MagicMock()
+    mock_der_rag.llm = mock_der_llm
+    der = DerivativesAgent(rag=mock_der_rag, llm=mock_der_llm)
+    r2 = der.ask(null_query)
+    assert "invalid" in r2.answer.lower() or "educational" in r2.answer.lower()
+    assert mock_der_llm.chat.call_count == 0
+    assert mock_der_rag.generate_answer.call_count == 0
+    assert mock_der_rag.query_with_sources.call_count == 0
+    assert mock_der_rag.retrieve.call_count == 0
 
-    port = PortfolioAgent()
-    port.service.get_portfolio = MagicMock()
-    r3 = port.ask(null_query)
-    assert port.service.get_portfolio.call_count == 0
+    # 3. CryptoAgent
+    mock_cr_llm = MagicMock(spec=LLMClient)
+    mock_crypto_svc = MagicMock()
+    cr = CryptoAgent(crypto_service=mock_crypto_svc, llm=mock_cr_llm)
+    r3 = cr.ask(null_query)
+    assert "invalid" in r3.answer.lower() or "educational" in r3.answer.lower()
+    assert mock_cr_llm.chat.call_count == 0
+    assert mock_crypto_svc.get_quote.call_count == 0
 
-    news = NewsAgent()
-    news._service.get_ticker_news = MagicMock()
-    r4 = news.ask(null_query)
-    assert news._service.get_ticker_news.call_count == 0
+    # 4. PersonalFinanceAgent
+    mock_pf_llm = MagicMock(spec=LLMClient)
+    pf = PersonalFinanceAgent(llm=mock_pf_llm)
+    r4 = pf.ask(null_query)
+    assert "invalid" in r4.answer.lower() or "educational" in r4.answer.lower()
+    assert mock_pf_llm.chat.call_count == 0
+
+    # 5. PortfolioAgent
+    mock_port_llm = MagicMock(spec=LLMClient)
+    mock_port_svc = MagicMock()
+    port = PortfolioAgent(service=mock_port_svc, llm=mock_port_llm)
+    r5 = port.ask(null_query)
+    assert "invalid" in r5.answer.lower() or "educational" in r5.answer.lower()
+    assert mock_port_llm.chat.call_count == 0
+    assert mock_port_svc.get_portfolio.call_count == 0
+    assert mock_port_svc.calculate_metrics.call_count == 0
+
+    # 6. NewsAgent
+    mock_news_llm = MagicMock(spec=LLMClient)
+    mock_news_svc = MagicMock()
+    news = NewsAgent(service=mock_news_svc, llm=mock_news_llm)
+    r6 = news.ask(null_query)
+    ans6 = _extract_answer_text(r6).lower()
+    assert "invalid" in ans6 or "educational" in ans6 or "cannot" in ans6
+    assert mock_news_llm.chat.call_count == 0
+    assert mock_news_svc.get_ticker_news.call_count == 0
+    assert mock_news_svc.get_macro_news.call_count == 0
+
+
+def test_exact_sanitized_input_propagation_to_downstream():
+    """
+    Focused test verifying that harmless whitespace normalization in secondary_safety_validator
+    is strictly propagated to downstream components (LLM chat & result query), rather than
+    passing the raw untrimmed input.
+    """
+    mock_llm = MagicMock(spec=LLMClient)
+    mock_llm.chat.return_value = (
+        "Compound interest is the interest calculated on the initial principal and the accumulated interest."
+    )
+    pf = PersonalFinanceAgent(llm=mock_llm)
+    raw_query = "   Explain compound interest in simple terms.   "
+
+    res = pf.ask(raw_query)
+
+    # 1. Downstream LLM was called exactly once
+    assert mock_llm.chat.call_count == 1
+    call_kwargs = mock_llm.chat.call_args.kwargs
+    passed_message = call_kwargs.get("message")
+
+    # 2. Downstream LLM received the sanitized/trimmed string
+    assert passed_message == "Explain compound interest in simple terms."
+    assert not passed_message.startswith(" ")
+    assert not passed_message.endswith(" ")
+
+    # 3. Downstream LLM did NOT receive the raw untrimmed query
+    assert passed_message != raw_query
+
+    # 4. Result object carries the sanitized query
+    assert res.query == "Explain compound interest in simple terms."
+    assert "Compound interest is" in res.answer
+
+
+def test_exact_sanitized_input_propagation_derivatives():
+    """
+    Verify sanitized input propagation in DerivativesAgent ensures pedagogical prompt
+    receives the trimmed query rather than raw whitespace-padded input.
+    """
+    mock_llm = MagicMock(spec=LLMClient)
+    mock_llm.chat.return_value = (
+        "Delta measures the sensitivity of an option's theoretical value to a change in the price of the underlying asset."
+    )
+    der = DerivativesAgent(llm=mock_llm)
+    raw_query = "   What does option delta measure?   "
+
+    res = der.ask(raw_query)
+
+    # 1. Downstream LLM was called exactly once for pedagogical explanation
+    assert mock_llm.chat.call_count == 1
+    call_args = mock_llm.chat.call_args
+    passed_prompt = call_args.args[0] if call_args.args else call_args.kwargs.get("message", "")
+
+    # 2. Prompt contains the sanitized concept without whitespace padding
+    assert "What does option delta measure?" in str(passed_prompt)
+    assert "   What does option delta measure?   " not in str(passed_prompt)
+
+    # 3. Result object carries the sanitized query
+    assert res.query == "What does option delta measure?"
 
 
 # ============================================================================
@@ -474,6 +626,9 @@ def test_central_router_legitimate_educational_query_dispatched():
     orchestrator = CentralOrchestrator()
     # Mock LLM generation to be deterministic and offline
     if orchestrator.equity_agent.rag_service.llm:
+        orchestrator.equity_agent.rag_service.llm.chat = MagicMock(
+            return_value="An Initial Public Offering (IPO) is when a company offers shares to the public for the first time."
+        )
         orchestrator.equity_agent.rag_service.llm.generate = MagicMock(
             return_value="An Initial Public Offering (IPO) is when a company offers shares to the public for the first time."
         )
