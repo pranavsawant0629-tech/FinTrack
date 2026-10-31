@@ -121,6 +121,8 @@ class MarketDataService:
                 clean_symbol,
                 last_exception,
             )
+            if stale_quote.freshness_status != "stale_cached_fallback":
+                stale_quote = stale_quote.model_copy(update={"freshness_status": "stale_cached_fallback"})
             return stale_quote
 
         # 5. Re-raise if no cache and all providers failed

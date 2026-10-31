@@ -193,6 +193,23 @@ class YahooFinanceProvider(BaseMarketDataProvider):
         if hist.empty:
             raise SymbolNotFoundError(f"No historical price data found for symbol '{symbol}'")
 
+        # Filter out invalid, non-finite, and incomplete price bars
+        valid_mask = (
+            hist["Close"].notna()
+            & hist["High"].notna()
+            & hist["Low"].notna()
+            & (hist["Close"] > 0)
+            & (hist["High"] > 0)
+            & (hist["Low"] > 0)
+            & (hist["High"] >= hist["Low"])
+        )
+        hist = hist[valid_mask]
+
+        if hist.empty:
+            raise MarketDataError(
+                f"No valid historical price bars available for symbol '{symbol}' after filtering incomplete data"
+            )
+
         start_date = str(hist.index[0])[:10]
         end_date = str(hist.index[-1])[:10]
         start_price = round(float(hist["Close"].iloc[0]), 2)  # type: ignore[arg-type]
