@@ -1,6 +1,6 @@
 {
-  "report_id": "eval_report_1793433891",
-  "timestamp": "2026-10-31T08:04:51.402614+00:00",
+  "report_id": "eval_report_1793436267",
+  "timestamp": "2026-10-31T08:44:27.479055+00:00",
   "mode": "offline",
   "total_suites": 20,
   "total_cases": 152,
@@ -9,7 +9,7 @@
   "skipped_cases": 0,
   "error_cases": 0,
   "overall_accuracy": 0.9671,
-  "duration_seconds": 3.634,
+  "duration_seconds": 3.724,
   "baseline_snapshot": {
     "phase": "Phase 6 Locked",
     "phase_6_passed": 378,
@@ -28,10 +28,10 @@
     "status": "phase_5_verified",
     "timestamp": "2026-10-31T07:45:00Z",
     "unit_tests_total": 717,
-    "unit_tests_passed": 702,
-    "unit_tests_failed": 15,
+    "unit_tests_passed": 707,
+    "unit_tests_failed": 10,
     "unit_tests_skipped": 0,
-    "unit_tests_pass_rate": 0.9791,
+    "unit_tests_pass_rate": 0.9861,
     "eval_benchmark_total": 152,
     "eval_benchmark_passed": 147,
     "eval_benchmark_failed": 5,
@@ -286,7 +286,7 @@
           },
           "error_message": null,
           "message": "",
-          "latency_ms": 1.0636999995767837,
+          "latency_ms": 0.8966000004875241,
           "metadata": {}
         },
         {
@@ -313,7 +313,7 @@
           },
           "error_message": null,
           "message": "",
-          "latency_ms": 0.09219999992637895,
+          "latency_ms": 0.09649999992689118,
           "metadata": {}
         }
       ]
@@ -352,7 +352,7 @@
           "actual_output": "ungrounded",
           "error_message": null,
           "message": "",
-          "latency_ms": 8.404099999097525,
+          "latency_ms": 12.557300000480609,
           "metadata": {}
         },
         {
@@ -364,7 +364,7 @@
           "actual_output": "partially_grounded",
           "error_message": "expected ungrounded, got partially_grounded (chunks retrieved: 1)",
           "message": "",
-          "latency_ms": 7.00680000045395,
+          "latency_ms": 13.89049999852432,
           "metadata": {}
         },
         {
@@ -376,7 +376,7 @@
           "actual_output": "ungrounded",
           "error_message": null,
           "message": "",
-          "latency_ms": 6.226800000149524,
+          "latency_ms": 11.045599998396938,
           "metadata": {}
         }
       ]
@@ -415,7 +415,7 @@
           "actual_output": "retrieved_3_chunks: ['igrbrochure', 'igrbrochure', 'AMFI_Investor_Awareness_Guide']",
           "error_message": null,
           "message": "",
-          "latency_ms": 7.868599999710568,
+          "latency_ms": 11.13929999883112,
           "metadata": {}
         },
         {
@@ -427,7 +427,7 @@
           "actual_output": "retrieved_3_chunks: ['primarymarkets', 'primarymarkets', 'primarymarkets']",
           "error_message": null,
           "message": "",
-          "latency_ms": 11.043999998946674,
+          "latency_ms": 11.998699999821838,
           "metadata": {}
         },
         {
@@ -439,7 +439,7 @@
           "actual_output": "retrieved_3_chunks: ['SEBI_REITs_Introduction', 'SEBI_REITs_Introduction', 'SEBI_REITs_Introduction']",
           "error_message": null,
           "message": "",
-          "latency_ms": 8.037900000999798,
+          "latency_ms": 8.770200000071782,
           "metadata": {}
         },
         {
@@ -451,7 +451,7 @@
           "actual_output": "retrieved_3_chunks: ['SEBI_InvITs_Introduction', 'SEBI_InvITs_Introduction', 'SEBI_InvITs_Introduction']",
           "error_message": null,
           "message": "",
-          "latency_ms": 7.466900000508758,
+          "latency_ms": 8.1002000006265,
           "metadata": {}
         },
         {
@@ -463,7 +463,7 @@
           "actual_output": "retrieved_3_chunks: ['SEBI_Derivatives_Study_2023', 'SEBI_Derivatives_Study_2023', 'SEBI_Derivatives_Study_2023']",
           "error_message": null,
           "message": "",
-          "latency_ms": 7.0345000003726454,
+          "latency_ms": 8.389499998884276,
           "metadata": {}
         },
         {
@@ -475,7 +475,7 @@
           "actual_output": "retrieved_3_chunks: ['RBI_FAME_2024', 'RBI_FAME_2024', 'RBI_FAME_2024']",
           "error_message": null,
           "message": "",
-          "latency_ms": 7.1291000003839144,
+          "latency_ms": 8.762899999055662,
           "metadata": {}
         },
         {
@@ -487,7 +487,7 @@
           "actual_output": "retrieved_3_chunks: ['AMFI_Investor_Awareness_Guide', 'AMFI_Investor_Awareness_Guide', 'AMFI_Investor_Awareness_Guide']",
           "error_message": null,
           "message": "",
-          "latency_ms": 8.05190000028233,
+          "latency_ms": 8.773599998676218,
           "metadata": {}
         },
         {
@@ -499,7 +499,7 @@
           "actual_output": "retrieved_3_chunks: ['SEBI_KYC_Account_Opening', 'SEBI_KYC_Account_Opening', 'primarymarkets']",
           "error_message": null,
           "message": "",
-          "latency_ms": 10.104199998750119,
+          "latency_ms": 10.007400000176858,
           "metadata": {}
         },
         {
@@ -511,7 +511,7 @@
           "actual_output": "ungrounded",
           "error_message": null,
           "message": "",
-          "latency_ms": 6.118399998740642,
+          "latency_ms": 5.662499999743886,
           "metadata": {}
         },
         {
@@ -523,7 +523,7 @@
           "actual_output": "ungrounded",
           "error_message": null,
           "message": "",
-          "latency_ms": 5.685300000550342,
+          "latency_ms": 6.570499999725143,
           "metadata": {}
         },
         {
@@ -535,7 +535,7 @@
           "actual_output": "retrieved_3_chunks: ['How_to_Buy_and_Sell_Shares_in_Stock_Exchange', 'Secondaryma', 'primarymarkets']",
           "error_message": null,
           "message": "",
-          "latency_ms": 7.065899999361136,
+          "latency_ms": 5.396100001235027,
           "metadata": {}
         },
         {
@@ -547,7 +547,7 @@
           "actual_output": "retrieved_3_chunks: ['corporatebonds', 'corporatebonds', 'corporatebonds']",
           "error_message": null,
           "message": "",
-          "latency_ms": 6.878799998958129,
+          "latency_ms": 5.459300000438816,
           "metadata": {}
         },
         {
@@ -559,7 +559,7 @@
           "actual_output": "retrieved_3_chunks: ['primarymarkets', 'primarymarkets', 'primarymarkets']",
           "error_message": null,
           "message": "",
-          "latency_ms": 7.427200000165612,
+          "latency_ms": 7.845100000849925,
           "metadata": {}
         },
         {
@@ -571,7 +571,7 @@
           "actual_output": "retrieved_0_chunks: []",
           "error_message": null,
           "message": "",
-          "latency_ms": 4.992199999833247,
+          "latency_ms": 5.125000001498847,
           "metadata": {}
         },
         {
@@ -583,7 +583,7 @@
           "actual_output": "retrieved_1_chunks: ['Corporate_Actions_Dividends_Bonus_Splits']",
           "error_message": null,
           "message": "",
-          "latency_ms": 4.615399999238434,
+          "latency_ms": 4.8553999986324925,
           "metadata": {}
         }
       ]
@@ -622,7 +622,7 @@
           "actual_output": "retrieved_3_chunks: ['primarymarkets', 'primarymarkets', 'corporatebonds']",
           "error_message": null,
           "message": "",
-          "latency_ms": 6.15269999980228,
+          "latency_ms": 6.163000000015018,
           "metadata": {}
         },
         {
@@ -634,7 +634,7 @@
           "actual_output": "retrieved_3_chunks: ['AMFI_Investor_Awareness_Guide', 'MFunds', 'Introduction_to_ETFs']",
           "error_message": null,
           "message": "",
-          "latency_ms": 7.638799999767798,
+          "latency_ms": 8.275500000308966,
           "metadata": {}
         },
         {
@@ -646,7 +646,7 @@
           "actual_output": "retrieved_3_chunks: ['Introduction_to_ETFs', 'Introduction_to_ETFs', 'AMFI_Investor_Awareness_Guide']",
           "error_message": null,
           "message": "",
-          "latency_ms": 6.620299998758128,
+          "latency_ms": 6.533000001581968,
           "metadata": {}
         },
         {
@@ -658,7 +658,7 @@
           "actual_output": "retrieved_3_chunks: ['Corporate_Actions_Dividends_Bonus_Splits', 'Corporate_Actions_Dividends_Bonus_Splits', 'Corporate_Actions_Dividends_Bonus_Splits']",
           "error_message": null,
           "message": "",
-          "latency_ms": 6.188100000144914,
+          "latency_ms": 7.651199999600067,
           "metadata": {}
         }
       ]

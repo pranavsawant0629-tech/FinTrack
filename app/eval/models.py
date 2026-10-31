@@ -155,10 +155,10 @@ class Phase5BaselineSnapshot(BaseModel):
 
     # Deterministic offline unit tests
     unit_tests_total: int = 717
-    unit_tests_passed: int = 702
-    unit_tests_failed: int = 15
+    unit_tests_passed: int = 707
+    unit_tests_failed: int = 10
     unit_tests_skipped: int = 0
-    unit_tests_pass_rate: float = 0.9791
+    unit_tests_pass_rate: float = 0.9861
 
     # Evaluation benchmark cases (across all data/evals suites)
     eval_benchmark_total: int = 152

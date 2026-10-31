@@ -1099,7 +1099,7 @@ def generate_markdown_scorecard(report: EvalReport) -> str:
         "cases achieve a **100.0% pass rate**.\n\n"
         "To guarantee regression tracking across developmental stages, FinTrack establishes a **Dual Baseline Architecture**: "
         "the historical Phase 6 regression benchmark (378 passed / 1 skipped / 0 failed) is preserved immutably, while the newly "
-        "established Phase 5 baseline records current offline unit tests (702 passed / 15 failed / 0 skipped across 717 tests), "
+        "established Phase 5 baseline records current offline unit tests (707 passed / 10 failed / 0 skipped across 717 tests), "
         "evaluation benchmark suites (147 passed / 5 failed across 152 cases, **96.7% accuracy**), and preserves live Ollama inference "
         "strictly separate from deterministic offline gates.\n\n"
     )
@@ -1145,8 +1145,15 @@ def generate_markdown_scorecard(report: EvalReport) -> str:
     md.append("| :--- | :---: | :---: | :---: | :---: | :---: | :---: |\n")
     for cat, m in p5.category_metrics.items():
         acc_pct = f"{m.get('accuracy', 0.0) * 100:.1f}%"
-        status_str = "**PASS**" if m.get("failed", 0) == 0 or m.get("accuracy", 0.0) >= 0.85 else "**REVIEW**"
-        md.append(f"| `{cat}` | {m.get('total', 0)} | {m.get('passed', 0)} | {m.get('failed', 0)} | {m.get('skipped', 0)} | {acc_pct} | {status_str} |\n")
+        failed_cnt = m.get("failed", 0)
+        acc_val = m.get("accuracy", 0.0)
+        if failed_cnt == 0:
+            status_str = "**PASS**"
+        elif acc_val >= 0.85:
+            status_str = "**PASS WITH KNOWN LIMITATIONS**"
+        else:
+            status_str = "**REVIEW**"
+        md.append(f"| `{cat}` | {m.get('total', 0)} | {m.get('passed', 0)} | {failed_cnt} | {m.get('skipped', 0)} | {acc_pct} | {status_str} |\n")
     md.append("\n")
 
     md.append("### 4.4. Optional Live Ollama Integration Status\n\n")
@@ -1274,7 +1281,7 @@ def generate_markdown_scorecard(report: EvalReport) -> str:
     md.append("The following items are intentionally preserved for downstream development phases:\n\n")
     md.append("1. **`RAG_OOC_002` Lexical Overlap:** Dense retrieval cosine similarity false positives on out-of-corpus queries sharing generic financial vocabulary.\n")
     md.append("2. **Legacy Compound Routing Discrepancies:** 4 multi-intent benchmark cases in `phase3_evaluation_benchmark`.\n")
-    md.append("3. **15 Legacy Router/Agent Unit Test String Assertions:** Unit tests expecting pre-Phase 5.3 string refusals rather than the standardized `SAFE_ADVISORY_REFUSAL` constant.\n")
+    md.append("3. **10 Legacy Router/Agent Unit Test Contract Shifts:** 5 tests expecting pre-Phase 5.3 string refusals rather than the standardized `SAFE_ADVISORY_REFUSAL` constant, and 5 tests expecting pre-dispatch domain classifications rather than the hardened `GENERAL` pre-dispatch short-circuit.\n")
     md.append("4. **12 Pre-Existing Phase 4 Working-Tree Changes:** Strictly preserved untouched and uncommitted in the working tree for Phase 6 market data integration.\n\n")
 
     # 11. Verification Matrix
@@ -1284,8 +1291,8 @@ def generate_markdown_scorecard(report: EvalReport) -> str:
     md.append("| **5.1** | Virtual Environment & Dependency Integrity | Python 3.13.15, `pip check`, FastEmbed cache | Clean environment, 0 conflicts | **VERIFIED** |\n")
     md.append("| **5.2** | Deterministic Financial Math & Indian Parser | 25 benchmark cases, 16 tools evals, unit tests | 41/41 passed (100.0%) | **VERIFIED** |\n")
     md.append("| **5.3** | Universal Safety Isolation & SEBI Disclosures | 25 adversarial evals, 61 unit tests, 6 agents | 38/38 passed (100.0%) | **VERIFIED** |\n")
-    md.append("| **5.4** | RAG Grounding & Citation Validation Hardening | 24 RAG evals, claim support unit tests | 23/24 passed (95.83%) | **VERIFIED** |\n")
-    md.append("| **5.5** | Evaluation Suite Expansion & Dual Baseline | 20 eval suites, dual baseline snapshots, scorecard | 147/152 passed (96.71%) | **VERIFIED** |\n\n")
+    md.append("| **5.4** | RAG Grounding & Citation Validation Hardening | 24 RAG evals, claim support unit tests | 23/24 passed (95.83%) | **PASS WITH KNOWN LIMITATIONS** |\n")
+    md.append("| **5.5** | Evaluation Suite Expansion & Dual Baseline | 20 eval suites, dual baseline snapshots, scorecard | 147/152 passed (96.71%) | **PASS WITH KNOWN LIMITATIONS** |\n\n")
 
     # 12. Final Assessment & Next Phase Recommendation
     md.append("## 12. Final Assessment & Phase 6 Readiness\n\n")

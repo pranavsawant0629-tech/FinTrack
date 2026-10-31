@@ -1,8 +1,8 @@
 # FinTrack — Phase 5 Evaluation Scorecard: Comprehensive Verification & Dual Baseline
 
-- **Execution Timestamp (UTC):** `2026-10-31T08:04:51.402614+00:00`
+- **Execution Timestamp (UTC):** `2026-10-31T08:44:27.479055+00:00`
 - **Execution Mode:** `OFFLINE` (Deterministic / Zero External Network)
-- **Duration:** `3.634s`
+- **Duration:** `3.724s`
 - **Git Baseline Commit:** `87743a4` (Phase 5.4 verified)
 - **Python Environment:** Python 3.13.15 (`.venv-finova`)
 - **Evaluation Harness Version:** FinTrack Phase 5.5 Runner
@@ -11,7 +11,7 @@
 
 Phase 5 has systematically hardened FinTrack across four foundational engineering dimensions: deterministic financial mathematics (Milestone 5.2), universal safety isolation and SEBI regulatory compliance (Milestone 5.3), RAG grounding and citation validation (Milestone 5.4), and evaluation suite expansion with dual baseline governance (Milestone 5.5). All 25 extended financial math benchmark cases and all 25 adversarial safety benchmark cases achieve a **100.0% pass rate**.
 
-To guarantee regression tracking across developmental stages, FinTrack establishes a **Dual Baseline Architecture**: the historical Phase 6 regression benchmark (378 passed / 1 skipped / 0 failed) is preserved immutably, while the newly established Phase 5 baseline records current offline unit tests (702 passed / 15 failed / 0 skipped across 717 tests), evaluation benchmark suites (147 passed / 5 failed across 152 cases, **96.7% accuracy**), and preserves live Ollama inference strictly separate from deterministic offline gates.
+To guarantee regression tracking across developmental stages, FinTrack establishes a **Dual Baseline Architecture**: the historical Phase 6 regression benchmark (378 passed / 1 skipped / 0 failed) is preserved immutably, while the newly established Phase 5 baseline records current offline unit tests (707 passed / 10 failed / 0 skipped across 717 tests), evaluation benchmark suites (147 passed / 5 failed across 152 cases, **96.7% accuracy**), and preserves live Ollama inference strictly separate from deterministic offline gates.
 
 ## 3. Historical Baseline (Phase 6 Locked)
 
@@ -34,10 +34,10 @@ The Phase 5 baseline encompasses **717** collected offline unit tests and **152*
 ### 4.1. Deterministic Offline Unit Tests
 
 - **Total Unit Tests Collected:** `717`
-- **Passed:** `702`
-- **Failed (Documented Legacy Router String Incompatibilities):** `15`
+- **Passed:** `707`
+- **Failed (Documented Legacy Router String Incompatibilities):** `10`
 - **Skipped:** `0`
-- **Pass Rate:** `97.91%`
+- **Pass Rate:** `98.61%`
 
 ### 4.2. Evaluation Benchmark Suites
 
@@ -54,8 +54,8 @@ The Phase 5 baseline encompasses **717** collected offline unit tests and **152*
 | `tools` | 41 | 41 | 0 | 0 | 100.0% | **PASS** |
 | `safety` | 38 | 38 | 0 | 0 | 100.0% | **PASS** |
 | `memory` | 9 | 9 | 0 | 0 | 100.0% | **PASS** |
-| `routing` | 40 | 36 | 4 | 0 | 90.0% | **PASS** |
-| `rag` | 24 | 23 | 1 | 0 | 95.8% | **PASS** |
+| `routing` | 40 | 36 | 4 | 0 | 90.0% | **PASS WITH KNOWN LIMITATIONS** |
+| `rag` | 24 | 23 | 1 | 0 | 95.8% | **PASS WITH KNOWN LIMITATIONS** |
 
 ### 4.4. Optional Live Ollama Integration Status
 
@@ -184,7 +184,7 @@ The following items are intentionally preserved for downstream development phase
 
 1. **`RAG_OOC_002` Lexical Overlap:** Dense retrieval cosine similarity false positives on out-of-corpus queries sharing generic financial vocabulary.
 2. **Legacy Compound Routing Discrepancies:** 4 multi-intent benchmark cases in `phase3_evaluation_benchmark`.
-3. **15 Legacy Router/Agent Unit Test String Assertions:** Unit tests expecting pre-Phase 5.3 string refusals rather than the standardized `SAFE_ADVISORY_REFUSAL` constant.
+3. **10 Legacy Router/Agent Unit Test Contract Shifts:** 5 tests expecting pre-Phase 5.3 string refusals rather than the standardized `SAFE_ADVISORY_REFUSAL` constant, and 5 tests expecting pre-dispatch domain classifications rather than the hardened `GENERAL` pre-dispatch short-circuit.
 4. **12 Pre-Existing Phase 4 Working-Tree Changes:** Strictly preserved untouched and uncommitted in the working tree for Phase 6 market data integration.
 
 ## 11. Phase 5 Verification Matrix
@@ -194,8 +194,8 @@ The following items are intentionally preserved for downstream development phase
 | **5.1** | Virtual Environment & Dependency Integrity | Python 3.13.15, `pip check`, FastEmbed cache | Clean environment, 0 conflicts | **VERIFIED** |
 | **5.2** | Deterministic Financial Math & Indian Parser | 25 benchmark cases, 16 tools evals, unit tests | 41/41 passed (100.0%) | **VERIFIED** |
 | **5.3** | Universal Safety Isolation & SEBI Disclosures | 25 adversarial evals, 61 unit tests, 6 agents | 38/38 passed (100.0%) | **VERIFIED** |
-| **5.4** | RAG Grounding & Citation Validation Hardening | 24 RAG evals, claim support unit tests | 23/24 passed (95.83%) | **VERIFIED** |
-| **5.5** | Evaluation Suite Expansion & Dual Baseline | 20 eval suites, dual baseline snapshots, scorecard | 147/152 passed (96.71%) | **VERIFIED** |
+| **5.4** | RAG Grounding & Citation Validation Hardening | 24 RAG evals, claim support unit tests | 23/24 passed (95.83%) | **PASS WITH KNOWN LIMITATIONS** |
+| **5.5** | Evaluation Suite Expansion & Dual Baseline | 20 eval suites, dual baseline snapshots, scorecard | 147/152 passed (96.71%) | **PASS WITH KNOWN LIMITATIONS** |
 
 ## 12. Final Assessment & Phase 6 Readiness
 

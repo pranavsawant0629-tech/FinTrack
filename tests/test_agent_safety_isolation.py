@@ -624,19 +624,16 @@ def test_central_router_query_rewriting_safety_gate():
 def test_central_router_legitimate_educational_query_dispatched():
     """Legitimate educational query must safely navigate central router and reach dispatch."""
     orchestrator = CentralOrchestrator()
-    # Mock LLM generation to be deterministic and offline
-    if orchestrator.equity_agent.rag_service.llm:
-        orchestrator.equity_agent.rag_service.llm.chat = MagicMock(
-            return_value="An Initial Public Offering (IPO) is when a company offers shares to the public for the first time."
-        )
-        orchestrator.equity_agent.rag_service.llm.generate = MagicMock(
-            return_value="An Initial Public Offering (IPO) is when a company offers shares to the public for the first time."
-        )
-
-    resp = orchestrator.ask("What is an Initial Public Offering?")
-    assert resp.answer != ""
-    assert "cannot provide" not in resp.answer.lower()
-    assert resp.grounding_status in ("fully_grounded", "partially_grounded", "ungrounded")
+    # Mock LLM generation cleanly so it does not leak into subsequent tests
+    with patch.object(
+        orchestrator.equity_agent.rag_service.llm,
+        "chat",
+        return_value="An Initial Public Offering (IPO) is when a company offers shares to the public for the first time.",
+    ):
+        resp = orchestrator.ask("What is an Initial Public Offering?")
+        assert resp.answer != ""
+        assert "cannot provide" not in resp.answer.lower()
+        assert resp.grounding_status in ("fully_grounded", "partially_grounded", "ungrounded")
 
 
 # ============================================================================
