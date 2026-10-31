@@ -20,6 +20,7 @@ from app.agents.portfolio.prompts import PORTFOLIO_DISCLAIMER, PORTFOLIO_TUTOR_S
 from app.agents.portfolio.safety import PortfolioSafetyGuardrail, portfolio_safety_guardrail
 from app.llm.llm_client import LLMClient, llm_client
 from app.memory.models import PersonalizationProfile, build_personalization_instruction
+from app.safety.validator import GLOBAL_REFUSAL_MESSAGE, secondary_safety_validator
 from app.tools.portfolio.models import PortfolioData, PortfolioMetrics, WhatIfSimulationResult
 from app.tools.portfolio.providers.mock import create_demo_portfolio
 from app.tools.portfolio.service import PortfolioService, portfolio_service
@@ -99,6 +100,37 @@ class PortfolioAgent:
     ) -> PortfolioAgentResult:
         """Execute the Portfolio Tutor pipeline."""
         t0 = time.perf_counter()
+
+        # Step 0: Universal Secondary Safety Check (<1ms)
+        try:
+            sec_safety = secondary_safety_validator.validate(query)
+            if not sec_safety.is_safe:
+                latency = round((time.perf_counter() - t0) * 1000, 2)
+                return PortfolioAgentResult(
+                    query=query,
+                    answer=sec_safety.refusal_message or GLOBAL_REFUSAL_MESSAGE,
+                    grounding_status="ungrounded",
+                    portfolio_data=None,
+                    grounding_sources=[],
+                    agent_name="Portfolio Tutor",
+                    disclaimer=PORTFOLIO_DISCLAIMER,
+                    model_used="deterministic_guardrail",
+                    latency_ms=latency,
+                )
+        except Exception as exc:
+            logger.critical("Universal safety validation failed in PortfolioAgent: %s", exc, exc_info=True)
+            latency = round((time.perf_counter() - t0) * 1000, 2)
+            return PortfolioAgentResult(
+                query=query,
+                answer=GLOBAL_REFUSAL_MESSAGE,
+                grounding_status="ungrounded",
+                portfolio_data=None,
+                grounding_sources=[],
+                agent_name="Portfolio Tutor",
+                disclaimer=PORTFOLIO_DISCLAIMER,
+                model_used="deterministic_guardrail",
+                latency_ms=latency,
+            )
 
         # Step 1: Safety Check (<1ms)
         safety_res = self.safety.evaluate(query)

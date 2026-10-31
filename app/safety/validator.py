@@ -9,9 +9,12 @@ Provides secondary structural, regex, and pattern-based safety validation:
 
 from __future__ import annotations
 
+import logging
 import re
 from dataclasses import dataclass
 from typing import ClassVar
+
+logger = logging.getLogger(__name__)
 
 GLOBAL_REFUSAL_MESSAGE = (
     "Finova AI is an educational platform and cannot provide personalized financial advice, "
@@ -45,12 +48,12 @@ class SecondarySafetyValidator:
     ROLEPLAY_ADVISORY_PATTERNS: ClassVar[list[re.Pattern[str]]] = [
         re.compile(
             r"\b(?:pretend|act\s+as|roleplay|simulate|imagine)\s+(?:you\s+are|being)?\s*(?:a|an)?\s*"
-            r"(?:sebi\s+registered|investment\s+advis[oe]r|financial\s+plann?er|portfolio\s+manag(?:er|ement)|broker|trader|ria)\b",
+            r"(?:sebi\s+(?:registered\s+)?(?:investment\s+advis[oe]r|ria|advisor)?|sebi\s+registered|investment\s+advis[oe]r|financial\s+plann?er|portfolio\s+manag(?:er|ement)|broker|trader|ria)\b",
             re.IGNORECASE,
         ),
         re.compile(
-            r"\b(?:in\s+a\s+fictional|hypothetical|thought\s+experiment|for\s+educational\s+purposes\s+only)\s*,?\s*"
-            r"(?:which|what|should\s+i|tell\s+me)\s+(?:stock|share|crypto|coin|option)\s+(?:to|should\s+i)?\s*(?:buy|sell|trade)\b",
+            r"\b(?:in\s+a\s+fictional|hypothetical(?:ly)?|thought\s+experiment|for\s+educational\s+purposes\s+only)\s*,?\s*"
+            r"(?:(?:which|what|tell\s+me)\s+(?:stock|share|crypto|coin|option)?\s*(?:to|should\s+i)?\s*(?:buy|sell|trade|invest\s+in)|should\s+i\s+(?:buy|sell|trade|invest\s+in))\b",
             re.IGNORECASE,
         ),
         re.compile(
@@ -66,7 +69,8 @@ class SecondarySafetyValidator:
     GUARANTEED_RETURN_PATTERNS: ClassVar[list[re.Pattern[str]]] = [
         re.compile(
             r"\b(?:100%|guarantee[ds]?|risk[- ]free|sure[- ]shot|riskless|zero[- ]risk|assured)\s+"
-            r"(?:return|profit|investment|gain|money|calls?|stock|trade|yield)\b",
+            r"(?:(?:100%|guarantee[ds]?|risk[- ]free|sure[- ]shot|riskless|zero[- ]risk|assured)\s+)*"
+            r"(?:returns?|profits?|investments?|gains?|money|calls?|stocks?|trades?|yields?)\b",
             re.IGNORECASE,
         ),
         re.compile(
@@ -83,6 +87,39 @@ class SecondarySafetyValidator:
         ),
         re.compile(
             r"\bwhich\s+(?:crypto|coin|token|crypto\s+coin)\s+(?:will|to|should\s+i)?\s*\d+x\b",
+            re.IGNORECASE,
+        ),
+    ]
+
+    # Direct Unsafe Financial Advisory & Stock Tips Patterns
+    DIRECT_ADVISORY_PATTERNS: ClassVar[list[re.Pattern[str]]] = [
+        re.compile(
+            r"\b(?:which|what)\s+(?:stock|share|company|equity|script|option|call|put|ce|pe|crypto|coin|token)s?\s+"
+            r"(?:should|shall|can|must|to)?\s*(?:i|we)?\s*(?:to\s+)?(?:buy|sell|invest\s+in|pick|purchase|trade)\b",
+            re.IGNORECASE,
+        ),
+        re.compile(
+            r"\bshould\s+(?:i|we)\s+(?:buy|sell|invest\s+in|hold|trade)\s+"
+            r"(?:ce\s+or\s+pe|pe\s+or\s+ce|calls?\s+or\s+puts?|puts?\s+or\s+calls?|[a-zA-Z0-9&]+)\b",
+            re.IGNORECASE,
+        ),
+        re.compile(
+            r"\b(?:tell\s+me|give\s+me|suggest|recommend|advise\s+me\s+on)\s+"
+            r"(?:what|which|a)?\s*(?:stock|share|call|put|option|ce|pe|crypto|coin|equity|script)s?\s+to\s+(?:buy|sell|invest\s+in|trade)\b",
+            re.IGNORECASE,
+        ),
+        re.compile(
+            r"\b(?:give\s+me|suggest|recommend|need|provide)\s+(?:some\s+)?"
+            r"(?:(?:intraday|stock|equity|hot|multibagger)\s+)*(?:tips?|calls?|picks?|stocks?\s+to\s+buy)\b",
+            re.IGNORECASE,
+        ),
+        re.compile(
+            r"\b(?:best|top)\s+(?:stocks?|shares?|cryptos?|coins?|options?)\s+to\s+(?:buy|invest\s+in)\s+"
+            r"(?:today|now|tomorrow|this\s+week|this\s+month|for\s+(?:quick|fast)\s+(?:profit|gains?))\b",
+            re.IGNORECASE,
+        ),
+        re.compile(
+            r"\b(?:where|how)\s+(?:should|to)\s+(?:i\s+)?(?:invest|put|allocate)\s+(?:my\s+)?(?:money|savings|bonus|portfolio|\u20b9?\d+[\d,]*)\b",
             re.IGNORECASE,
         ),
     ]
@@ -127,46 +164,82 @@ class SecondarySafetyValidator:
     def validate(cls, text: str) -> SafetyValidationResult:
         """
         Validate text against financial safety bypasses and prompt injection attacks.
-        Returns SafetyValidationResult with is_safe, is_injection, and diagnostics.
+        Fails closed on any unexpected exception or malformed input.
         """
-        cleaned = text.strip()
-        if not cleaned:
+        try:
+            if text is None or not isinstance(text, str):
+                logger.warning("SecondarySafetyValidator received non-string input: %s", type(text))
+                return SafetyValidationResult(
+                    is_safe=False,
+                    is_injection=False,
+                    violation_type="malformed_input",
+                    refusal_message=GLOBAL_REFUSAL_MESSAGE,
+                    sanitized_text="",
+                )
+
+            # Sanitize null bytes and bounding string to prevent ReDoS / memory exhaustion
+            cleaned = text.replace("\x00", "").strip()
+            if len(cleaned) > 50000:
+                cleaned = cleaned[:50000]
+
+            if not cleaned:
+                return SafetyValidationResult(is_safe=True, sanitized_text=cleaned)
+
+            # 1. Check for prompt injection attacks
+            for pattern in cls.PROMPT_INJECTION_PATTERNS:
+                if pattern.search(cleaned):
+                    return SafetyValidationResult(
+                        is_safe=False,
+                        is_injection=True,
+                        violation_type="prompt_injection",
+                        refusal_message=INJECTION_REFUSAL_MESSAGE,
+                        sanitized_text=cleaned,
+                    )
+
+            # 2. Check for roleplay or hypothetical advisory bypasses
+            for pattern in cls.ROLEPLAY_ADVISORY_PATTERNS:
+                if pattern.search(cleaned):
+                    return SafetyValidationResult(
+                        is_safe=False,
+                        is_injection=False,
+                        violation_type="advisory_bypass",
+                        refusal_message=GLOBAL_REFUSAL_MESSAGE,
+                        sanitized_text=cleaned,
+                    )
+
+            # 3. Check for guaranteed returns & moonshot speculation promises
+            for pattern in cls.GUARANTEED_RETURN_PATTERNS:
+                if pattern.search(cleaned):
+                    return SafetyValidationResult(
+                        is_safe=False,
+                        is_injection=False,
+                        violation_type="guaranteed_returns",
+                        refusal_message=GLOBAL_REFUSAL_MESSAGE,
+                        sanitized_text=cleaned,
+                    )
+
+            # 4. Check for direct financial advisory & stock tips
+            for pattern in cls.DIRECT_ADVISORY_PATTERNS:
+                if pattern.search(cleaned):
+                    return SafetyValidationResult(
+                        is_safe=False,
+                        is_injection=False,
+                        violation_type="advisory",
+                        refusal_message=GLOBAL_REFUSAL_MESSAGE,
+                        sanitized_text=cleaned,
+                    )
+
             return SafetyValidationResult(is_safe=True, sanitized_text=cleaned)
 
-        # 1. Check for prompt injection attacks
-        for pattern in cls.PROMPT_INJECTION_PATTERNS:
-            if pattern.search(cleaned):
-                return SafetyValidationResult(
-                    is_safe=False,
-                    is_injection=True,
-                    violation_type="prompt_injection",
-                    refusal_message=INJECTION_REFUSAL_MESSAGE,
-                    sanitized_text=cleaned,
-                )
-
-        # 2. Check for roleplay or hypothetical advisory bypasses
-        for pattern in cls.ROLEPLAY_ADVISORY_PATTERNS:
-            if pattern.search(cleaned):
-                return SafetyValidationResult(
-                    is_safe=False,
-                    is_injection=False,
-                    violation_type="advisory_bypass",
-                    refusal_message=GLOBAL_REFUSAL_MESSAGE,
-                    sanitized_text=cleaned,
-                )
-
-        # 3. Check for guaranteed returns & moonshot speculation promises
-        for pattern in cls.GUARANTEED_RETURN_PATTERNS:
-            if pattern.search(cleaned):
-                return SafetyValidationResult(
-                    is_safe=False,
-                    is_injection=False,
-                    violation_type="guaranteed_returns",
-                    refusal_message=GLOBAL_REFUSAL_MESSAGE,
-                    sanitized_text=cleaned,
-                )
-
-        return SafetyValidationResult(is_safe=True, sanitized_text=cleaned)
+        except Exception as exc:
+            logger.critical("SecondarySafetyValidator failed unexpectedly: %s", exc, exc_info=True)
+            return SafetyValidationResult(
+                is_safe=False,
+                is_injection=False,
+                violation_type="validator_internal_fault",
+                refusal_message=GLOBAL_REFUSAL_MESSAGE,
+                sanitized_text="",
+            )
 
 
 secondary_safety_validator = SecondarySafetyValidator()

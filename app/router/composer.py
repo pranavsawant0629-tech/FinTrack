@@ -16,6 +16,7 @@ well-structured markdown response while preserving:
 from __future__ import annotations
 
 from typing import Any, Literal
+from app.agents.derivatives.prompts import EMPIRICAL_SEBI_FO_RISK_DISCLOSURE
 from app.rag.service import Citation
 from app.router.models import (
     DEFAULT_DISCLAIMER,
@@ -31,6 +32,19 @@ CAUSAL_MARKET_EXPLAINER = (
     "continuous order matching between buyers and sellers, market liquidity, broader market index "
     "trends (such as NIFTY 50 and SENSEX), sector-wide movements, and corporate developments. "
     "Finova AI does not speculate on intraday market rumors or unverified external drivers."
+)
+
+# Domain-specific regulatory disclosures and notices
+CRYPTO_RISK_NOTICE = (
+    "Risk Disclosure (Digital Assets): Cryptocurrencies and digital assets are highly volatile, "
+    "speculative, and subject to extreme price volatility and regulatory uncertainty. "
+    "They are not legal tender in India and lack statutory investor dispute resolution mechanisms."
+)
+
+PORTFOLIO_SIMULATION_NOTICE = (
+    "Portfolio Analytics Notice: All portfolio metrics, asset allocation breakdowns, and 'what-if' "
+    "stress tests are educational simulations based on user-provided holdings and do not constitute "
+    "portfolio rebalancing advice or investment directives."
 )
 
 
@@ -218,6 +232,42 @@ class ResponseComposer:
                 lines.append(f"   {art['summary']}")
         return "\n".join(lines)
 
+    def assemble_disclaimer(
+        self,
+        base_disclaimer: str = DEFAULT_DISCLAIMER,
+        domain_detected: Domain = "EQUITY",
+        sub_tasks: list[SubTaskExecutionMetadata] | None = None,
+        derivatives_data: dict[str, Any] | None = None,
+        crypto_data: dict[str, Any] | None = None,
+        portfolio_data: dict[str, Any] | None = None,
+    ) -> str:
+        """Contextually assemble regulatory disclosures and domain-specific notices without duplicates."""
+        parts = [base_disclaimer.strip()] if base_disclaimer and base_disclaimer.strip() else [DEFAULT_DISCLAIMER]
+
+        all_domains = {domain_detected}
+        if sub_tasks:
+            all_domains.update(t.domain for t in sub_tasks)
+
+        # 1. Derivatives disclosure (empirical SEBI F&O study)
+        has_derivatives = "DERIVATIVES" in all_domains or derivatives_data is not None
+        if has_derivatives:
+            if "89% of individual traders" not in parts[0] and "SEBI research study" not in parts[0]:
+                parts.append(EMPIRICAL_SEBI_FO_RISK_DISCLOSURE)
+
+        # 2. Crypto disclosure
+        has_crypto = "CRYPTO" in all_domains or crypto_data is not None
+        if has_crypto:
+            if "Digital Assets" not in parts[0] and "Cryptocurrencies" not in parts[0]:
+                parts.append(CRYPTO_RISK_NOTICE)
+
+        # 3. Portfolio simulation notice
+        has_portfolio = "PORTFOLIO" in all_domains or portfolio_data is not None
+        if has_portfolio:
+            if "Portfolio Analytics Notice" not in parts[0] and "educational simulations" not in parts[0]:
+                parts.append(PORTFOLIO_SIMULATION_NOTICE)
+
+        return "\n\n".join(parts)
+
     def compose(
         self,
         query: str,
@@ -360,6 +410,15 @@ class ResponseComposer:
         else:
             grounding_status = "ungrounded"
 
+        assembled_disclaimer = self.assemble_disclaimer(
+            base_disclaimer=disclaimer,
+            domain_detected=domain_detected,
+            sub_tasks=sub_tasks,
+            derivatives_data=derivatives_data,
+            crypto_data=crypto_data,
+            portfolio_data=portfolio_data,
+        )
+
         return OrchestratorResponse(
             query=query,
             resolved_query=resolved_query,
@@ -378,7 +437,7 @@ class ResponseComposer:
             domain_detected=domain_detected,
             sub_tasks=sub_tasks or [],
             agent_name="Finova Orchestrator",
-            disclaimer=disclaimer,
+            disclaimer=assembled_disclaimer,
             model_used=model_used,
             latency_ms=latency_ms,
         )

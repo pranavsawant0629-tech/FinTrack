@@ -2,14 +2,22 @@
 Pedagogical system prompts and regulatory disclaimers for the Derivatives Tutor Agent (Prof. Derivo).
 """
 
-DERIVATIVES_DISCLAIMER = (
-    "Disclaimer: Finova AI is an educational platform and not a registered investment adviser or "
-    "research analyst. Trading in equity derivatives (Futures & Options) involves substantial risk of "
-    "capital loss. According to official SEBI research ('Analysis of Profit and Loss of Individual Traders in Equity F&O Segment', "
-    "SEBI Circular SEBI/HO/MRD/MRD-PoD-1/P/CIR/2023/84), 9 out of 10 individual traders in F&O incur net losses. "
-    "This analysis is strictly for educational purposes and does not constitute trading advice, "
-    "options recommendations, or price targets."
+# Statutory Non-Advisory Disclaimer (SEBI Investment Advisers Regulations)
+STATUTORY_NON_ADVISORY_DISCLAIMER = (
+    "Disclaimer: Finova AI is an educational platform and not a SEBI-registered investment adviser. "
+    "This information is provided strictly for educational purposes and does not constitute financial, "
+    "investment, or trading advice."
 )
+
+# Cited Empirical Statistical Risk Disclosure (SEBI January 2023 Study)
+EMPIRICAL_SEBI_FO_RISK_DISCLOSURE = (
+    "Risk Disclosure: According to SEBI's research study on individual investors dealing in equity derivatives "
+    "(January 2023), 89% of individual traders in the equity F&O segment incurred net losses in FY22, "
+    "with an average net loss of approximately ₹1.1 lakh. Trading in derivatives involves substantial risk of capital loss."
+)
+
+# Combined Derivatives Disclaimer (disentangling statutory boundary from empirical study citation)
+DERIVATIVES_DISCLAIMER = f"{STATUTORY_NON_ADVISORY_DISCLAIMER}\n\n{EMPIRICAL_SEBI_FO_RISK_DISCLOSURE}"
 
 DERIVATIVES_TUTOR_SYSTEM_PROMPT = """You are Prof. Derivo, Finova AI's specialized Derivatives Tutor.
 Your mission is to teach derivatives (Futures and Options), risk management, and hedging mechanisms with clarity, mathematical objectivity, and strict safety.

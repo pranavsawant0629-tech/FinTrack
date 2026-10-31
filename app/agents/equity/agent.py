@@ -17,6 +17,11 @@ from pydantic import BaseModel, Field
 from app.agents.equity.prompts import EQUITY_TUTOR_SYSTEM_PROMPT
 from app.agents.equity.safety import EquitySafetyGuardrail, equity_safety_guardrail
 from app.rag.service import Citation, RAGService, rag_service
+from app.safety.validator import (
+    GLOBAL_REFUSAL_MESSAGE,
+    SecondarySafetyValidator,
+    secondary_safety_validator,
+)
 from app.tools.market.intent import MarketIntentClassifier
 from app.tools.market.interfaces import SymbolNotFoundError
 from app.tools.market.models import MarketDataProvenance
@@ -72,6 +77,39 @@ class EquityAgent:
     ) -> EquityAgentResult:
         """Execute the Equity Agent pipeline with deterministic safety, market tools, and SEBI RAG."""
         t0 = time.perf_counter()
+
+        # Step 0: Universal Secondary Safety & Injection Guardrail Check
+        try:
+            sec_safety = secondary_safety_validator.validate(query)
+            if not sec_safety.is_safe:
+                latency = round((time.perf_counter() - t0) * 1000, 2)
+                return EquityAgentResult(
+                    query=query,
+                    answer=sec_safety.refusal_message or GLOBAL_REFUSAL_MESSAGE,
+                    grounding_status="ungrounded",
+                    citations=[],
+                    market_data=None,
+                    grounding_sources=[],
+                    agent_name="Equity Tutor",
+                    disclaimer=EQUITY_DISCLAIMER,
+                    model_used="deterministic_guardrail",
+                    latency_ms=latency,
+                )
+        except Exception as exc:
+            logger.critical("Universal safety validation failed in EquityAgent: %s", exc, exc_info=True)
+            latency = round((time.perf_counter() - t0) * 1000, 2)
+            return EquityAgentResult(
+                query=query,
+                answer=GLOBAL_REFUSAL_MESSAGE,
+                grounding_status="ungrounded",
+                citations=[],
+                market_data=None,
+                grounding_sources=[],
+                agent_name="Equity Tutor",
+                disclaimer=EQUITY_DISCLAIMER,
+                model_used="deterministic_guardrail",
+                latency_ms=latency,
+            )
 
         # Step 1: Safety & Advisory Guardrail Check
         safety_result = self.safety.evaluate(query)

@@ -18,6 +18,7 @@ from pydantic import BaseModel, Field
 from app.agents.crypto.prompts import CRYPTO_DISCLAIMER, CRYPTO_TUTOR_SYSTEM_PROMPT
 from app.agents.crypto.safety import CryptoSafetyGuardrail, crypto_safety_guardrail
 from app.llm.llm_client import LLMClient, llm_client
+from app.safety.validator import GLOBAL_REFUSAL_MESSAGE, secondary_safety_validator
 from app.tools.crypto.interfaces import CryptoAssetNotFoundError, CryptoProviderError
 from app.tools.crypto.models import CryptoProvenance
 from app.tools.crypto.service import CryptoDataService, crypto_data_service
@@ -71,6 +72,37 @@ class CryptoAgent:
     ) -> CryptoAgentResult:
         """Execute the Crypto Tutor pipeline."""
         t0 = time.perf_counter()
+
+        # Step 0: Universal Secondary Safety Check
+        try:
+            sec_safety = secondary_safety_validator.validate(query)
+            if not sec_safety.is_safe:
+                latency = round((time.perf_counter() - t0) * 1000, 2)
+                return CryptoAgentResult(
+                    query=query,
+                    answer=sec_safety.refusal_message or GLOBAL_REFUSAL_MESSAGE,
+                    grounding_status="ungrounded",
+                    crypto_data=None,
+                    grounding_sources=[],
+                    agent_name="Crypto Tutor (Prof. Crypton)",
+                    disclaimer=CRYPTO_DISCLAIMER,
+                    model_used="deterministic_guardrail",
+                    latency_ms=latency,
+                )
+        except Exception as exc:
+            logger.critical("Universal safety validation failed in CryptoAgent: %s", exc, exc_info=True)
+            latency = round((time.perf_counter() - t0) * 1000, 2)
+            return CryptoAgentResult(
+                query=query,
+                answer=GLOBAL_REFUSAL_MESSAGE,
+                grounding_status="ungrounded",
+                crypto_data=None,
+                grounding_sources=[],
+                agent_name="Crypto Tutor (Prof. Crypton)",
+                disclaimer=CRYPTO_DISCLAIMER,
+                model_used="deterministic_guardrail",
+                latency_ms=latency,
+            )
 
         # Step 1: Safety Check
         safety_res = self.safety.evaluate(query)

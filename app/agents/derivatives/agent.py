@@ -22,6 +22,7 @@ from app.agents.derivatives.safety import DerivativesSafetyGuardrail, derivative
 from app.llm.llm_client import LLMClient, llm_client
 from app.memory.models import PersonalizationProfile, build_personalization_instruction
 from app.rag.service import Citation, RAGService, rag_service
+from app.safety.validator import GLOBAL_REFUSAL_MESSAGE, secondary_safety_validator
 from app.tools.derivatives.greeks import get_all_greeks, get_greek_info
 from app.tools.derivatives.payoff import calculate_futures_pnl, calculate_option_payoff
 
@@ -132,6 +133,39 @@ class DerivativesAgent:
     ) -> DerivativesAgentResult:
         """Execute the Derivatives Tutor pipeline."""
         t0 = time.perf_counter()
+
+        # Step 0: Universal Secondary Safety Check (<1ms)
+        try:
+            sec_safety = secondary_safety_validator.validate(query)
+            if not sec_safety.is_safe:
+                latency = round((time.perf_counter() - t0) * 1000, 2)
+                return DerivativesAgentResult(
+                    query=query,
+                    answer=sec_safety.refusal_message or GLOBAL_REFUSAL_MESSAGE,
+                    grounding_status="ungrounded",
+                    citations=[],
+                    derivatives_data=None,
+                    grounding_sources=[],
+                    agent_name="Derivatives Tutor (Prof. Derivo)",
+                    disclaimer=DERIVATIVES_DISCLAIMER,
+                    model_used="deterministic_guardrail",
+                    latency_ms=latency,
+                )
+        except Exception as exc:
+            logger.critical("Universal safety validation failed in DerivativesAgent: %s", exc, exc_info=True)
+            latency = round((time.perf_counter() - t0) * 1000, 2)
+            return DerivativesAgentResult(
+                query=query,
+                answer=GLOBAL_REFUSAL_MESSAGE,
+                grounding_status="ungrounded",
+                citations=[],
+                derivatives_data=None,
+                grounding_sources=[],
+                agent_name="Derivatives Tutor (Prof. Derivo)",
+                disclaimer=DERIVATIVES_DISCLAIMER,
+                model_used="deterministic_guardrail",
+                latency_ms=latency,
+            )
 
         # Step 1: Safety Evaluation (<1ms)
         safety_res = self.safety.evaluate(query)

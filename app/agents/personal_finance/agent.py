@@ -18,6 +18,7 @@ from pydantic import BaseModel, Field
 from app.agents.personal_finance.prompts import PF_DISCLAIMER, PF_TUTOR_SYSTEM_PROMPT
 from app.agents.personal_finance.safety import PersonalFinanceSafetyGuardrail, personal_finance_safety_guardrail
 from app.llm.llm_client import LLMClient, llm_client
+from app.safety.validator import GLOBAL_REFUSAL_MESSAGE, secondary_safety_validator
 from app.tools.calc.budget import calculate_50_30_20
 from app.tools.calc.compounding import calculate_compound_interest, calculate_sip
 from app.tools.calc.emergency_fund import calculate_emergency_fund
@@ -142,6 +143,37 @@ class PersonalFinanceAgent:
     ) -> PersonalFinanceAgentResult:
         """Execute the Personal Finance Tutor pipeline."""
         t0 = time.perf_counter()
+
+        # Step 0: Universal Secondary Safety Check
+        try:
+            sec_safety = secondary_safety_validator.validate(query)
+            if not sec_safety.is_safe:
+                latency = round((time.perf_counter() - t0) * 1000, 2)
+                return PersonalFinanceAgentResult(
+                    query=query,
+                    answer=sec_safety.refusal_message or GLOBAL_REFUSAL_MESSAGE,
+                    grounding_status="ungrounded",
+                    calc_data=None,
+                    grounding_sources=[],
+                    agent_name="Personal Finance Tutor (Prof. Persona)",
+                    disclaimer=PF_DISCLAIMER,
+                    model_used="deterministic_guardrail",
+                    latency_ms=latency,
+                )
+        except Exception as exc:
+            logger.critical("Universal safety validation failed in PersonalFinanceAgent: %s", exc, exc_info=True)
+            latency = round((time.perf_counter() - t0) * 1000, 2)
+            return PersonalFinanceAgentResult(
+                query=query,
+                answer=GLOBAL_REFUSAL_MESSAGE,
+                grounding_status="ungrounded",
+                calc_data=None,
+                grounding_sources=[],
+                agent_name="Personal Finance Tutor (Prof. Persona)",
+                disclaimer=PF_DISCLAIMER,
+                model_used="deterministic_guardrail",
+                latency_ms=latency,
+            )
 
         # Step 1: Safety Check
         safety_res = self.safety.evaluate(query)
