@@ -65,6 +65,12 @@ class TestValidIndianNumberParsing:
         assert parse_indian_number("(50,000)") == -50000.0
         assert parse_indian_number("(₹1.5 Lakh)") == -150000.0
 
+    def test_positive_sign_numbers(self):
+        """Explicit positive sign numbers."""
+        assert parse_indian_number("+500") == 500.0
+        assert parse_indian_number("+ ₹ 50,000") == 50000.0
+        assert parse_indian_number("+2.5L") == 250000.0
+
 
 class TestInvalidNumberRejection:
     """Tests for inputs that must be rejected with ValueError by parse_indian_number."""
@@ -77,10 +83,17 @@ class TestInvalidNumberRejection:
             parse_indian_number("   ")
 
     def test_unsupported_foreign_currencies(self):
-        """Strictly rejects non-INR currency symbols."""
-        for symbol in ["$", "€", "¥", "£"]:
+        """Strictly rejects non-INR currency symbols and ISO currency words."""
+        for symbol in ["$", "€", "¥", "£", "USD", "EUR", "GBP", "JPY"]:
             with pytest.raises(ValueError, match="Unsupported currency symbol"):
-                parse_indian_number(f"{symbol}500")
+                parse_indian_number(f"{symbol} 500")
+
+    def test_leading_multiplier_rejected(self):
+        """Rejects numbers where multiplier precedes digits."""
+        bad_leading = ["k 50", "lakh 5", "crore 10", "k50", "lakh5"]
+        for bad in bad_leading:
+            with pytest.raises(ValueError, match="denomination multiplier cannot precede"):
+                parse_indian_number(bad)
 
     def test_malformed_comma_grouping(self):
         """Rejects nonsensical comma placements."""

@@ -51,11 +51,6 @@ def calculate_cagr(
             f"Tenure in years must be strictly positive and finite, got: {tenure_years}"
         )
 
-    if tenure_years < (1.0 / 365.0):
-        raise ValueError(
-            f"Tenure must be at least 1 day (1/365 years) for meaningful CAGR calculation, got: {tenure_years}"
-        )
-
     init_val = float(initial_value)
     fin_val = float(final_value)
     tenure = float(tenure_years)
@@ -172,11 +167,6 @@ def calculate_rule_of_72(annual_rate_pct: float) -> dict[str, Any]:
     ):
         raise ValueError(
             f"Annual rate must be strictly positive for Rule of 72 doubling calculation, got: {annual_rate_pct}"
-        )
-
-    if annual_rate_pct > 1000.0:
-        raise ValueError(
-            f"Annual rate exceeds maximum reasonable threshold (1000%), got: {annual_rate_pct}"
         )
 
     rate = float(annual_rate_pct)

@@ -64,8 +64,6 @@ def calculate_option_payoff(
 
     if isinstance(lot_size, bool) or not isinstance(lot_size, int) or lot_size <= 0:
         raise ValueError(f"Lot size must be a strictly positive integer, got: {lot_size}")
-    if lot_size > 1000000:
-        raise ValueError(f"Lot size exceeds reasonable bound (1,000,000), got: {lot_size}")
 
     strike = round(float(strike_price), 2)
     prem = round(float(premium), 2)

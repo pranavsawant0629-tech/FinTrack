@@ -24,6 +24,11 @@ UNSUPPORTED_CURRENCIES = [
     ("CHF", "CHF"),
     ("AUD", "AUD"),
     ("CAD", "CAD"),
+    ("USD", "USD"),
+    ("EUR", "EUR"),
+    ("GBP", "GBP"),
+    ("JPY", "JPY"),
+    ("CNY", "CNY"),
 ]
 
 # Denomination multipliers
@@ -118,11 +123,18 @@ def parse_indian_number(text: str) -> float:
 
     # 1. Reject unsupported currency symbols
     for symbol, label in UNSUPPORTED_CURRENCIES:
-        if symbol in cleaned:
-            raise ValueError(
-                f"Unsupported currency symbol detected: '{symbol}' ({label}). "
-                "The Indian number parser strictly supports INR (₹, Rs., Rs, INR) or raw numbers."
-            )
+        if symbol.isalpha():
+            if re.search(rf"\b{re.escape(symbol)}\b", cleaned, re.IGNORECASE):
+                raise ValueError(
+                    f"Unsupported currency symbol detected: '{symbol}' ({label}). "
+                    "The Indian number parser strictly supports INR (₹, Rs., Rs, INR) or raw numbers."
+                )
+        else:
+            if symbol in cleaned:
+                raise ValueError(
+                    f"Unsupported currency symbol detected: '{symbol}' ({label}). "
+                    "The Indian number parser strictly supports INR (₹, Rs., Rs, INR) or raw numbers."
+                )
 
     # 2. Reject ambiguous numerical ranges or choices
     if re.search(r"\b(?:to|or|between)\b", cleaned, re.IGNORECASE):
@@ -145,6 +157,8 @@ def parse_indian_number(text: str) -> float:
     elif cleaned.lower().startswith("negative"):
         is_negative = True
         cleaned = cleaned[8:].strip()
+    elif cleaned.startswith("+"):
+        cleaned = cleaned[1:].strip()
 
     # 4. Strip valid INR currency prefixes and suffixes
     cleaned = re.sub(r"^(?:₹|\brs\.?\s*|\binr\s*)", "", cleaned, flags=re.IGNORECASE).strip()
@@ -152,6 +166,12 @@ def parse_indian_number(text: str) -> float:
 
     if not cleaned:
         raise ValueError(f"No numerical content found in input: '{text}'")
+
+    # Reject leading multipliers where multiplier precedes digits (e.g. 'k 50', 'lakh 5', 'crore 10', 'k50')
+    if re.match(r"^(?:crores?|crs?|lakhs?|lacs?|l|thousands?|k)(?:\b|\d)", cleaned, flags=re.IGNORECASE):
+        raise ValueError(
+            f"Malformed input: denomination multiplier cannot precede numerical digits in '{text}'."
+        )
 
     # 5. Check for malformed multiplier chaining (e.g. '5 lakh crore', '10 k thousand')
     # Words matching multipliers

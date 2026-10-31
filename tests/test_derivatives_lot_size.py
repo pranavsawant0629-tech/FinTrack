@@ -93,8 +93,21 @@ class TestOptionLotSizeParameterization:
         assert res.total_premium == 50.0
         assert res.total_max_loss == 50.0
 
+    def test_large_lot_size_accepted(self):
+        """Very large positive integer lot sizes (e.g. 5,000,000) must be accepted without arbitrary caps."""
+        res = calculate_option_payoff(
+            option_type="call",
+            position="long",
+            strike_price=100.0,
+            premium=5.0,
+            lot_size=5000000,
+        )
+        assert res.lot_size == 5000000
+        assert res.total_premium == 25000000.0
+        assert res.total_max_loss == 25000000.0
+
     def test_invalid_lot_size_raises_value_error(self):
-        """Lot size must be a strictly positive integer <= 1,000,000."""
+        """Lot size must be a strictly positive integer; rejects zero, negative, boolean, and float."""
         with pytest.raises(ValueError, match="Lot size must be a strictly positive integer"):
             calculate_option_payoff("call", "long", 1000.0, 50.0, lot_size=0)
 
@@ -106,7 +119,4 @@ class TestOptionLotSizeParameterization:
 
         with pytest.raises(ValueError, match="Lot size must be a strictly positive integer"):
             calculate_option_payoff("call", "long", 1000.0, 50.0, lot_size=25.5)  # type: ignore[arg-type]
-
-        with pytest.raises(ValueError, match="Lot size exceeds reasonable bound"):
-            calculate_option_payoff("call", "long", 1000.0, 50.0, lot_size=2000000)
 

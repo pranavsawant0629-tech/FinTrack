@@ -41,6 +41,13 @@ class TestCAGRCalculation:
         # (65000/50000)^(1/2.5) - 1 = 1.3^0.4 - 1 = 0.11065... -> 11.07%
         assert res["cagr_percent"] == 11.07
 
+    def test_cagr_sub_day_tenure(self):
+        """Tenure shorter than one day (e.g. 0.5/365 years) is mathematically valid and accepted."""
+        sub_day_tenure = 0.5 / 365.0
+        res = calculate_cagr(initial_value=100000.0, final_value=100100.0, tenure_years=sub_day_tenure)
+        assert res["cagr_percent"] > 0
+        assert res["tenure_years"] == round(sub_day_tenure, 4)
+
     def test_cagr_negative_growth_loss(self):
         """CAGR over an investment loss."""
         res = calculate_cagr(initial_value=100000.0, final_value=50000.0, tenure_years=3.0)
@@ -130,6 +137,12 @@ class TestRuleOf72Calculation:
         assert res["approximate_doubling_years"] == 3.0
         assert res["exact_doubling_years"] == 3.22
         assert res["estimation_discrepancy_years"] == 0.22
+
+    def test_rule_of_72_very_high_annual_rate(self):
+        """Rates above 1000% (e.g. 1500%) are accepted without arbitrary caps."""
+        res = calculate_rule_of_72(annual_rate_pct=1500.0)
+        assert res["approximate_doubling_years"] == round(72.0 / 1500.0, 2)
+        assert res["exact_doubling_years"] > 0
 
     def test_rule_of_72_invalid_inputs(self):
         """Annual rate <= 0 raises ValueError."""
