@@ -4,7 +4,9 @@ Secondary Deterministic Safety & Adversarial Injection Validator for Finova AI (
 Provides secondary structural, regex, and pattern-based safety validation:
 1. Catches advanced advisory bypasses: roleplay RIA, fictional framing, guaranteed returns, 100x moonshots.
 2. Detects direct and indirect prompt injection, system prompt overrides, delimiter collisions, and jailbreak modes.
-3. Completely deterministic: Zero LLM calls, zero embeddings, zero network access, sub-millisecond execution.
+3. Detects direct unsafe financial advisory requests and stock tips.
+4. Enforces strict input validation: rejects oversized queries (>4096 chars) and null bytes (\x00).
+5. Completely deterministic: Zero LLM calls, zero embeddings, zero network access, sub-millisecond execution.
 """
 
 from __future__ import annotations
@@ -15,6 +17,11 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 logger = logging.getLogger(__name__)
+
+# Maximum allowed query length in characters. Financial inquiries exceeding this
+# threshold are rejected deterministically before downstream processing to prevent
+# ReDoS, memory exhaustion, and delimiter overflow.
+MAX_QUERY_LENGTH: int = 4096
 
 GLOBAL_REFUSAL_MESSAGE = (
     "Finova AI is an educational platform and cannot provide personalized financial advice, "
@@ -28,6 +35,16 @@ INJECTION_REFUSAL_MESSAGE = (
     "Finova AI detected instructions attempting to alter system behavior, override safety guardrails, "
     "or manipulate prompt context. As a secure educational system, these instructions are rejected. "
     "How can I assist you with financial education or market concepts today?"
+)
+
+OVERSIZED_REFUSAL_MESSAGE = (
+    f"Query exceeds the maximum permitted length of {MAX_QUERY_LENGTH} characters. "
+    "Please provide a more concise question."
+)
+
+MALFORMED_INPUT_REFUSAL_MESSAGE = (
+    "Finova AI detected invalid control characters or null bytes in the input. "
+    "Please provide a standard financial inquiry."
 )
 
 
@@ -164,7 +181,12 @@ class SecondarySafetyValidator:
     def validate(cls, text: str) -> SafetyValidationResult:
         """
         Validate text against financial safety bypasses and prompt injection attacks.
-        Fails closed on any unexpected exception or malformed input.
+        Enforces strict boundary checking:
+        1. Non-string or None inputs are rejected as malformed.
+        2. Inputs containing null bytes (\\x00) are rejected as malformed.
+        3. Inputs exceeding MAX_QUERY_LENGTH (4096 chars) are rejected as oversized.
+        4. Empty or whitespace-only inputs are rejected deterministically.
+        5. Fails closed on any unexpected exception.
         """
         try:
             if text is None or not isinstance(text, str):
@@ -177,13 +199,37 @@ class SecondarySafetyValidator:
                     sanitized_text="",
                 )
 
-            # Sanitize null bytes and bounding string to prevent ReDoS / memory exhaustion
-            cleaned = text.replace("\x00", "").strip()
-            if len(cleaned) > 50000:
-                cleaned = cleaned[:50000]
+            # Reject null bytes immediately to prevent validation/execution mismatches
+            if "\x00" in text:
+                logger.warning("SecondarySafetyValidator detected null byte in query")
+                return SafetyValidationResult(
+                    is_safe=False,
+                    is_injection=False,
+                    violation_type="malformed_input",
+                    refusal_message=MALFORMED_INPUT_REFUSAL_MESSAGE,
+                    sanitized_text="",
+                )
 
+            # Reject oversized inputs deterministically rather than silently truncating
+            if len(text) > MAX_QUERY_LENGTH:
+                logger.warning("SecondarySafetyValidator detected oversized query: %d characters", len(text))
+                return SafetyValidationResult(
+                    is_safe=False,
+                    is_injection=False,
+                    violation_type="oversized_input",
+                    refusal_message=OVERSIZED_REFUSAL_MESSAGE,
+                    sanitized_text="",
+                )
+
+            cleaned = text.strip()
             if not cleaned:
-                return SafetyValidationResult(is_safe=True, sanitized_text=cleaned)
+                return SafetyValidationResult(
+                    is_safe=False,
+                    is_injection=False,
+                    violation_type="empty_query",
+                    refusal_message="Please enter a valid financial question or concept to explore.",
+                    sanitized_text="",
+                )
 
             # 1. Check for prompt injection attacks
             for pattern in cls.PROMPT_INJECTION_PATTERNS:

@@ -52,7 +52,7 @@ class NewsSafetyGuardrail:
     ]
 
     def evaluate(self, query: str) -> NewsSafetyResult:
-        # 1. Universal Secondary Safety Check
+        # 1. Universal Secondary Safety & Input Sanitization
         try:
             from app.safety.validator import GLOBAL_REFUSAL_MESSAGE, secondary_safety_validator
             sec_res = secondary_safety_validator.validate(query)
@@ -62,6 +62,7 @@ class NewsSafetyGuardrail:
                     refusal_reason=sec_res.violation_type or "secondary_safety_violation",
                     refusal_message=sec_res.refusal_message or GLOBAL_REFUSAL_MESSAGE,
                 )
+            cleaned = sec_res.sanitized_text
         except Exception as exc:
             import logging
             logging.getLogger(__name__).critical("Universal safety validation failed in NewsSafetyGuardrail: %s", exc, exc_info=True)
@@ -70,10 +71,6 @@ class NewsSafetyGuardrail:
                 refusal_reason="validator_internal_fault",
                 refusal_message=GLOBAL_REFUSAL_MESSAGE,
             )
-
-        cleaned = query.strip()
-        if not cleaned:
-            return NewsSafetyResult(is_safe=True)
 
         for pattern in self.UNSAFE_PATTERNS:
             if pattern.search(cleaned):

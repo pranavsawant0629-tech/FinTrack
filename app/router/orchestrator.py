@@ -35,6 +35,7 @@ from app.router.models import (
     SubTaskExecutionMetadata,
 )
 from app.router.safety import GlobalSafetyGuardrail, global_safety_guardrail
+from app.safety.validator import GLOBAL_REFUSAL_MESSAGE, secondary_safety_validator
 from app.tools.crypto.models import CryptoQuote
 from app.tools.crypto.service import CryptoDataService, crypto_data_service
 from app.tools.market.models import CompanyOverview, HistoricalPrices, MarketDataProvenance, MarketQuote
@@ -149,6 +150,37 @@ class CentralOrchestrator:
         """Execute the central orchestration pipeline."""
         t0 = time.perf_counter()
 
+        # Step 0A: Universal Input Sanitization & Central Safety Pre-Filter (<0.5ms)
+        sec_safety = secondary_safety_validator.validate(query)
+        if not sec_safety.is_safe:
+            latency = round((time.perf_counter() - t0) * 1000, 2)
+            sub_meta = SubTaskExecutionMetadata(
+                task_id="task_1",
+                domain="GENERAL",
+                intent="advice_refusal",
+                status="filtered",
+                latency_ms=latency,
+            )
+            return OrchestratorResponse(
+                query=query if isinstance(query, str) else "",
+                resolved_query=None,
+                answer=sec_safety.refusal_message or GLOBAL_REFUSAL_MESSAGE,
+                grounding_status="ungrounded",
+                citations=[],
+                market_data=None,
+                market_data_list=[],
+                crypto_data=None,
+                grounding_sources=[],
+                domain_detected="GENERAL",
+                sub_tasks=[sub_meta],
+                agent_name="Finova Orchestrator",
+                disclaimer=DEFAULT_DISCLAIMER,
+                model_used="deterministic_guardrail",
+                latency_ms=latency,
+            )
+        # Enforce sanitized input across router pipeline
+        query = sec_safety.sanitized_text
+
         # Step 0: Multi-Turn Context and Anaphora Resolution (<0.5ms)
         resolved_ctx = self.context_resolver.resolve_context(
             query=query,
@@ -156,6 +188,36 @@ class CentralOrchestrator:
         )
         effective_query = resolved_ctx.resolved_query if resolved_ctx.has_reference else query
         resolved_query_attr = resolved_ctx.resolved_query if resolved_ctx.has_reference else None
+
+        if resolved_ctx.has_reference:
+            sec_effective = secondary_safety_validator.validate(effective_query)
+            if not sec_effective.is_safe:
+                latency = round((time.perf_counter() - t0) * 1000, 2)
+                sub_meta = SubTaskExecutionMetadata(
+                    task_id="task_1",
+                    domain="GENERAL",
+                    intent="advice_refusal",
+                    status="filtered",
+                    latency_ms=latency,
+                )
+                return OrchestratorResponse(
+                    query=query,
+                    resolved_query=resolved_query_attr,
+                    answer=sec_effective.refusal_message or GLOBAL_REFUSAL_MESSAGE,
+                    grounding_status="ungrounded",
+                    citations=[],
+                    market_data=None,
+                    market_data_list=[],
+                    crypto_data=None,
+                    grounding_sources=[],
+                    domain_detected="GENERAL",
+                    sub_tasks=[sub_meta],
+                    agent_name="Finova Orchestrator",
+                    disclaimer=DEFAULT_DISCLAIMER,
+                    model_used="deterministic_guardrail",
+                    latency_ms=latency,
+                )
+            effective_query = sec_effective.sanitized_text
 
         # Step 1: Global Safety Pre-Filtering (<1ms)
         safety_res = self.safety.evaluate(effective_query)

@@ -144,7 +144,7 @@ class PersonalFinanceAgent:
         """Execute the Personal Finance Tutor pipeline."""
         t0 = time.perf_counter()
 
-        # Step 0: Universal Secondary Safety Check
+        # Step 0: Universal Secondary Safety & Input Sanitization
         try:
             sec_safety = secondary_safety_validator.validate(query)
             if not sec_safety.is_safe:
@@ -160,6 +160,8 @@ class PersonalFinanceAgent:
                     model_used="deterministic_guardrail",
                     latency_ms=latency,
                 )
+            # Enforce sanitized input across all downstream processing
+            query = sec_safety.sanitized_text
         except Exception as exc:
             logger.critical("Universal safety validation failed in PersonalFinanceAgent: %s", exc, exc_info=True)
             latency = round((time.perf_counter() - t0) * 1000, 2)
