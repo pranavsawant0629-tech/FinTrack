@@ -256,3 +256,21 @@ Market quotes are formatted deterministically:
   - **Provider:** Yahoo Finance
   ```
 - In React: `frontend/src/components/chat/MarketCard.tsx` renders an interactive card showing price badges, green/red gain/loss pills, day range slider, and timestamp.
+
+
+---
+
+## 9. Phase 4 Reliability Enhancements & Data Freshness Invariants
+
+### 1. Incomplete / NaN Historical Bar Filtering
+In historical 1-month daily summaries (`get_historical_summary`), external providers (such as Yahoo Finance) can intermittently append an unfinalized intraday bar with `NaN` values for `Close`, `High`, or `Low`.
+- **Filtering Rule**: Prior to calculating period metrics, all price bars are checked for finite positive values and valid high/low bounds ($Close > 0$, $High > 0$, $Low > 0$, $High \ge Low$). Non-finite or incomplete bars are discarded.
+- **Empty Guard**: If no valid bars remain after filtering, a typed `MarketDataError` is raised rather than manufacturing metrics.
+
+### 2. Stale Cache Freshness & Timestamp Invariants
+- When transient network outages or rate limits occur, expired cache entries may be served if `allow_stale=True`.
+- **Status Stamping**: Any quote returned via the stale fallback path is explicitly marked with `freshness_status = "stale_cached_fallback"`.
+- **Timestamp Integrity**: The original `retrieved_at` timestamp recorded at provider retrieval time is preserved, truthfully exposing the true age of the data. FinTrack never fabricates current timestamps for stale market quotes.
+
+### 3. Hermetic Provider Testing
+- Providers are covered by deterministic, mock-based unit tests (`test_market_providers.py`) using `unittest.mock` fixtures for quotes, rate limiting (429), symbol not found (404), and historical bar filtering, eliminating reliance on external network availability during automated testing.

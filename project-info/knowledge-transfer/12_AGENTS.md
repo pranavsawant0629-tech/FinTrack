@@ -404,11 +404,15 @@ def ask(query: str, user_id: str | None = None) -> NewsAgentResult
 #### 3. Internal Routing & Flow
 1. **Safety Guardrail**: Evaluates `NewsSafetyGuardrail`. Blocks unverified rumors, market manipulation claims, or leaked insider information requests.
 2. **Entity Extraction**: Matches known Indian tickers (e.g. `RELIANCE.NS`, `TCS.NS`, `^NSEI`).
-3. **News Service Dispatch**:
-   - If ticker detected: `NewsService.get_ticker_news(symbol, limit=4)`.
+3. **News Service Dispatch & Deduplication**:
+   - If ticker detected: `NewsService.get_ticker_news(symbol, limit=4)` with symbol-aware boundary matching preventing substring false positives on short tickers (e.g. `IT`, `BEL`, `ON`, `M&M`).
    - If general/macro: `NewsService.get_macro_news(limit=4)`.
-4. **Provenance & Freshness Validation**: Checks timestamps against freshness policies (`REALTIME`, `DELAYED`, `ARCHIVAL`).
-5. **Truthful No-Article Handling**: If no articles exist, explicitly states that no verified news was found; never generates fictitious headlines.
+   - **Conservative URL Canonicalization**: Strips known marketing tracking parameters (`utm_*`, `ref`, `fbclid`, `gclid`) while strictly preserving substantive query parameters and destinations.
+   - **Headline Deduplication**: Fingerprints normalized titles (alphanumeric, lowercase, stripped punctuation) to collapse duplicate wire syndications.
+   - **Chronological Ordering**: Dated articles are sorted newest-first in reverse-chronological order. Undated articles (unparseable publication dates) are placed after dated items.
+   - **Truthful Unknown Dates**: Missing or unparseable publication dates are preserved as empty/unknown; current timestamps are never fabricated.
+4. **Provenance & Freshness Validation**: Checks timestamps against freshness policies (`REALTIME`, `DELAYED`, `STALE_CACHE`, `OFFLINE_FIXTURE`).
+5. **Truthful No-Article Handling**: If no articles exist, explicitly states that no verified news was found; never generates fictitious headlines or silently falls back to mock news in live mode.
 
 #### 4. Tools Employed
 - `NewsService` (`app/tools/news/service.py`): RSS feeds and financial news provider abstraction.
