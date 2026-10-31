@@ -202,9 +202,34 @@ class EquityAgent:
                     latency_ms=latency,
                 )
             except SymbolNotFoundError:
-                pass
+                latency = round((time.perf_counter() - t0) * 1000, 2)
+                return EquityAgentResult(
+                    query=query,
+                    answer=f"Could not find market quote data for symbol '{intent_res.symbol}'. Please check the ticker symbol and try again.",
+                    grounding_status="ungrounded",
+                    citations=[],
+                    market_data=None,
+                    grounding_sources=[],
+                    agent_name="Equity Tutor",
+                    disclaimer=EQUITY_DISCLAIMER,
+                    model_used="deterministic_tools",
+                    latency_ms=latency,
+                )
             except Exception as exc:
                 logger.warning("Market quote retrieval failed for %s: %s", intent_res.symbol, exc)
+                latency = round((time.perf_counter() - t0) * 1000, 2)
+                return EquityAgentResult(
+                    query=query,
+                    answer=f"Market quote data for '{intent_res.symbol}' is currently unavailable due to an upstream service error. Please try again later.",
+                    grounding_status="ungrounded",
+                    citations=[],
+                    market_data=None,
+                    grounding_sources=[],
+                    agent_name="Equity Tutor",
+                    disclaimer=EQUITY_DISCLAIMER,
+                    model_used="deterministic_tools",
+                    latency_ms=latency,
+                )
 
         # 2C. Historical Performance Intent
         if intent_res.intent == "historical" and intent_res.symbol:
@@ -243,9 +268,34 @@ class EquityAgent:
                     latency_ms=latency,
                 )
             except SymbolNotFoundError:
-                pass
+                latency = round((time.perf_counter() - t0) * 1000, 2)
+                return EquityAgentResult(
+                    query=query,
+                    answer=f"Could not find historical data for symbol '{intent_res.symbol}'. Please check the ticker symbol and try again.",
+                    grounding_status="ungrounded",
+                    citations=[],
+                    market_data=None,
+                    grounding_sources=[],
+                    agent_name="Equity Tutor",
+                    disclaimer=EQUITY_DISCLAIMER,
+                    model_used="deterministic_tools",
+                    latency_ms=latency,
+                )
             except Exception as exc:
                 logger.warning("Historical data retrieval failed for %s: %s", intent_res.symbol, exc)
+                latency = round((time.perf_counter() - t0) * 1000, 2)
+                return EquityAgentResult(
+                    query=query,
+                    answer=f"Historical performance data for '{intent_res.symbol}' is currently unavailable due to an upstream service error. Please try again later.",
+                    grounding_status="ungrounded",
+                    citations=[],
+                    market_data=None,
+                    grounding_sources=[],
+                    agent_name="Equity Tutor",
+                    disclaimer=EQUITY_DISCLAIMER,
+                    model_used="deterministic_tools",
+                    latency_ms=latency,
+                )
 
         # 2D. Overview / Fundamentals Intent
         if intent_res.intent == "overview" and intent_res.symbol:
@@ -283,9 +333,34 @@ class EquityAgent:
                     latency_ms=latency,
                 )
             except SymbolNotFoundError:
-                pass
+                latency = round((time.perf_counter() - t0) * 1000, 2)
+                return EquityAgentResult(
+                    query=query,
+                    answer=f"Could not find company overview data for symbol '{intent_res.symbol}'. Please check the ticker symbol and try again.",
+                    grounding_status="ungrounded",
+                    citations=[],
+                    market_data=None,
+                    grounding_sources=[],
+                    agent_name="Equity Tutor",
+                    disclaimer=EQUITY_DISCLAIMER,
+                    model_used="deterministic_tools",
+                    latency_ms=latency,
+                )
             except Exception as exc:
                 logger.warning("Company overview retrieval failed for %s: %s", intent_res.symbol, exc)
+                latency = round((time.perf_counter() - t0) * 1000, 2)
+                return EquityAgentResult(
+                    query=query,
+                    answer=f"Company overview data for '{intent_res.symbol}' is currently unavailable due to an upstream service error. Please try again later.",
+                    grounding_status="ungrounded",
+                    citations=[],
+                    market_data=None,
+                    grounding_sources=[],
+                    agent_name="Equity Tutor",
+                    disclaimer=EQUITY_DISCLAIMER,
+                    model_used="deterministic_tools",
+                    latency_ms=latency,
+                )
 
         # Step 3: SEBI RAG Execution (For conceptual, educational, regulatory, or unmapped queries)
         sys_prompt = EQUITY_TUTOR_SYSTEM_PROMPT

@@ -26,8 +26,40 @@ COMMON_STOPWORDS = {
     "the", "is", "are", "and", "in", "of", "to", "a", "an", "for", "on", "with",
     "as", "by", "at", "be", "this", "that", "it", "from", "or", "you", "your",
     "can", "should", "will", "would", "which", "what", "how", "has", "have", "had",
-    "there", "their", "they", "our", "all", "also", "then", "into", "more", "other"
+    "there", "their", "they", "our", "all", "also", "then", "into", "more", "other",
+    "about", "been", "were", "when", "where", "who", "whom", "why", "must", "may", "might",
+    "such", "some", "any", "each", "both", "only", "well"
 }
+
+STANDALONE_ACRONYMS = {"sebi", "ipo", "kyc"}
+
+
+def normalize_text_for_comparison(text: str) -> str:
+    """
+    Normalizes numbers, currencies, and percentages for deterministic factual comparison.
+    - Strips comma grouping inside digits (e.g. 50,000 -> 50000, 1,00,000 -> 100000).
+    - Standardizes Indian Rupee currency formats (₹, Rs., Rs, INR) to '₹<amount>'.
+    - Standardizes percentages (e.g. '10 percent', '10 per cent', '10 %') to '10%'.
+    """
+    norm = re.sub(r"(?<=\d),(?=\d)", "", text)
+    norm = re.sub(r"(?:₹|\brs\.?\s*|\binr\s*)\s*(\d+(?:\.\d+)?)", r"₹\1", norm, flags=re.IGNORECASE)
+    norm = re.sub(r"\b(\d+(?:\.\d+)?)\s*(?:%|\bpercent\b|\bper\s+cent\b)", r"\1%", norm, flags=re.IGNORECASE)
+    return norm
+
+
+def check_numeric_match(anchor: str, norm_chunk: str) -> bool:
+    """
+    Word-bounded check for numeric anchor in normalized chunk text.
+    Handles percentages, currencies, decimals, years, and integers without false substring hits.
+    """
+    esc = re.escape(anchor)
+    if anchor.endswith("%"):
+        pat = rf"(?<![\d\w])" + esc + r"(?![\w])"
+    elif anchor.startswith("₹") or anchor.startswith("$"):
+        pat = rf"(?<![\d\w])" + esc + r"(?!(?:\.\d|[\d\w]))"
+    else:
+        pat = rf"(?<![\d\w\.])" + esc + r"(?!(?:\.\d|[\d\w\%]))"
+    return bool(re.search(pat, norm_chunk))
 
 
 class Citation(BaseModel):
@@ -93,6 +125,9 @@ class ClaimSupportValidator:
         if not valid_indices:
             return cleaned_text.strip(), [], "ungrounded", {
                 "reason": "no_valid_citations",
+                "total_cited_claims": 0,
+                "supported_claims": 0,
+                "unsupported_claims": 0,
                 "invalid_markers_stripped": list(invalid_indices),
             }
 
@@ -121,53 +156,74 @@ class ClaimSupportValidator:
             sentence_text_only = re.sub(r"\[\d+\]", "", sentence_clean).strip()
             sentence_text_only = re.sub(r"(?:^|\n)\s*\d+[\.\)]\s*", " ", sentence_text_only).strip()
 
-            # Extract content words from sentence
+            norm_sent = normalize_text_for_comparison(sentence_text_only)
+
+            # 1. Extract numeric anchors (word-bounded, normalized)
+            currency_anchors = re.findall(r"[\$₹]\d+(?:\.\d+)?", norm_sent)
+            percentage_anchors = re.findall(r"\b\d+(?:\.\d+)?%(?!\w)", norm_sent)
+            raw_nums = re.findall(r"\b\d+(?:\.\d+)?\b", norm_sent)
+
+            standalone_nums = []
+            for n in raw_nums:
+                if n.isdigit() and len(n) == 1:
+                    continue
+                if re.search(rf"\bstep\s+{re.escape(n)}\b", norm_sent, re.IGNORECASE):
+                    continue
+                if any(n in c for c in currency_anchors) or any(n in p for p in percentage_anchors):
+                    continue
+                standalone_nums.append(n)
+
+            numeric_anchors = currency_anchors + percentage_anchors + standalone_nums
+
+            # 2. Extract content words and substantive tokens (excluding standalone institutional acronyms)
             words = re.findall(r"\b[A-Za-z0-9%₹\-]+\b", sentence_text_only.lower())
             content_words = [w for w in words if len(w) >= 3 and w not in COMMON_STOPWORDS]
+            substantive_tokens = [w for w in content_words if w.lower() not in STANDALONE_ACRONYMS]
 
-            # Extract key factual anchors (numbers, percentages, uppercase acronyms)
-            factual_anchors = re.findall(r"\b(?:\d+%?|[A-Z]{2,})\b", sentence_text_only)
+            # 3. Detect negation / prohibition terms in claim
+            claim_negs = set(re.findall(r"\b(not|never|cannot|prohibits?|prohibited|banned|bans|disallows?|forbidden)\b", sentence_text_only.lower()))
+
+            from app.rag.retriever import INDIAN_FINANCIAL_ACRONYMS
 
             sentence_is_supported = False
             matched_evidence_chunks: list[int] = []
 
             for cit_idx in sent_markers:
                 chunk = chunks[cit_idx - 1]
+                norm_chunk = normalize_text_for_comparison(chunk.text)
                 chunk_text_lower = chunk.text.lower()
-                chunk_text_upper = chunk.text.upper()
 
-                # Calculate content word overlap
-                matched_words = [w for w in content_words if w in chunk_text_lower]
-                overlap_ratio = len(matched_words) / max(1, len(content_words))
+                # Contradiction check: if claim asserts an explicit negation/prohibition absent from chunk
+                chunk_negs = set(re.findall(r"\b(not|never|cannot|prohibits?|prohibited|banned|bans|disallows?|forbidden)\b", chunk_text_lower))
+                if claim_negs - chunk_negs:
+                    continue
 
-                # Separate numeric/percentage factual assertions from acronyms (ignoring standalone step/list numbers and single-digit ordinals)
-                numeric_anchors = [
-                    a for a in factual_anchors
-                    if re.search(r"\d", a)
-                    and not re.search(rf"\bstep\s+{a}\b", sentence_text_only, re.I)
-                    and not re.match(r"^[0-9]$", a)
-                ]
-                
-                # Check acronym/term anchors (direct match or expansion match)
-                from app.rag.retriever import INDIAN_FINANCIAL_ACRONYMS
-                matched_anchors = []
-                for a in factual_anchors:
-                    a_up = a.upper()
-                    if a_up in chunk_text_upper:
-                        matched_anchors.append(a)
-                    elif a_up in INDIAN_FINANCIAL_ACRONYMS and INDIAN_FINANCIAL_ACRONYMS[a_up].upper() in chunk_text_upper:
-                        matched_anchors.append(a)
-
-                # Corroboration rules:
-                # 1. If explicit numbers/percentages are asserted (e.g. 900%, 10%), they must appear in evidence
+                # Numeric check: ALL numeric assertions must match word-bounded in normalized chunk
                 if numeric_anchors:
-                    has_numeric_support = any(num in chunk.text for num in numeric_anchors)
-                    if not has_numeric_support:
-                        sentence_is_supported = False
+                    has_all_numeric = all(check_numeric_match(a, norm_chunk) for a in numeric_anchors)
+                    if not has_all_numeric:
                         continue
 
-                # 2. Corroboration via content word overlap and semantic anchors
-                if overlap_ratio >= 0.20 or matched_anchors or (len(content_words) <= 2 and overlap_ratio > 0.0):
+                # Substantive content word overlap (allowing acronym expansion match)
+                matched_substantive = []
+                for w in substantive_tokens:
+                    w_up = w.upper()
+                    if w in chunk_text_lower:
+                        matched_substantive.append(w)
+                    elif w_up in INDIAN_FINANCIAL_ACRONYMS and INDIAN_FINANCIAL_ACRONYMS[w_up].lower() in chunk_text_lower:
+                        matched_substantive.append(w)
+
+                substantive_overlap = len(matched_substantive) / max(1, len(substantive_tokens))
+
+                # Require substantive content token overlap of at least 25% (or full match for short sentences)
+                if len(substantive_tokens) <= 1:
+                    is_overlap_supported = (substantive_overlap == 1.0 and len(matched_substantive) >= 1)
+                elif len(substantive_tokens) == 2:
+                    is_overlap_supported = (substantive_overlap >= 0.50 and len(matched_substantive) >= 2)
+                else:
+                    is_overlap_supported = (substantive_overlap >= 0.25 and len(matched_substantive) >= 2)
+
+                if is_overlap_supported:
                     sentence_is_supported = True
                     matched_evidence_chunks.append(cit_idx)
 
@@ -223,14 +279,15 @@ class ClaimSupportValidator:
             has_markers = bool(re.findall(r"\[\d+\]", sentence_clean))
             if not has_markers:
                 # Check if this uncited sentence asserts specific numbers or percentages
-                has_nums = bool(re.findall(r"\b(?:\d+%?|₹\d+)\b", sentence_body))
+                norm_body = normalize_text_for_comparison(sentence_body)
+                uncited_anchors = re.findall(r"(?:[\$₹]\d+(?:\.\d+)?|\b\d+(?:\.\d+)?%(?!\w)|\b\d{2,}(?:\.\d+)?\b)", norm_body)
                 # Exclude purely conversational / disclaimer / concluding / step intro sentences
                 is_boilerplate = any(b in sentence_clean.lower() for b in [
                     "ask me", "let me know", "disclaimer", "note:", "feel free", "hope this helps", "in summary", "follow these steps", "here are the steps", "here is how", "these steps will help"
                 ])
-                if has_nums and not is_boilerplate:
+                if uncited_anchors and not is_boilerplate:
                     # Also ignore step numbers like "step 1", "step 2"
-                    non_step_nums = [n for n in re.findall(r"\b(?:\d+%?|₹\d+)\b", sentence_body) if not re.search(rf"\bstep\s+{n}\b", sentence_body, re.I)]
+                    non_step_nums = [n for n in uncited_anchors if not re.search(rf"\bstep\s+{re.escape(n)}\b", norm_body, re.I)]
                     if non_step_nums:
                         has_uncited_factual_claims = True
                         break

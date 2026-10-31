@@ -347,13 +347,27 @@ class CentralOrchestrator:
                 entities=decision.entities,
             )
         elif normalized_domain_ctx and normalized_domain_ctx != "GENERAL":
-            decision = RoutingDecision(
-                query=effective_query,
-                domain=normalized_domain_ctx,
-                intent=decision.intent,
-                is_compound=False,
-                entities=decision.entities,
+            # Check if this is an unambiguous live quote query or explicit equity concept
+            # which should NOT be overridden by a conflicting domain context (e.g. CRYPTO).
+            is_unambiguous_live_quote = (
+                decision.intent in ("quote", "historical", "overview") and bool(decision.entities)
             )
+            is_unambiguous_equity_concept = (
+                decision.domain == "EQUITY"
+                and any(term in q_lower for term in ["ipo", "ipos", "fpo", "demat", "sebi", "nse", "bse"])
+            )
+            should_preserve_classified_domain = (
+                (is_unambiguous_live_quote and decision.domain != normalized_domain_ctx)
+                or (is_unambiguous_equity_concept and normalized_domain_ctx != "EQUITY")
+            )
+            if not should_preserve_classified_domain:
+                decision = RoutingDecision(
+                    query=effective_query,
+                    domain=normalized_domain_ctx,
+                    intent=decision.intent,
+                    is_compound=False,
+                    entities=decision.entities,
+                )
 
         # Step 4: Multi-Intent / Compound Query Execution
         response: OrchestratorResponse | None = None

@@ -155,7 +155,22 @@ class CryptoAgent:
                     latency_ms=latency,
                 )
             except CryptoAssetNotFoundError:
-                pass
+                latency = round((time.perf_counter() - t0) * 1000, 2)
+                return CryptoAgentResult(
+                    query=query,
+                    answer=(
+                        f"### 🪙 Market Data Notice: **{symbol}**\n\n"
+                        f"Cryptocurrency asset **{symbol}** could not be found or is not supported for real-time tracking.\n"
+                        f"Finova AI does not estimate or simulate live cryptocurrency prices."
+                    ),
+                    grounding_status="ungrounded",
+                    crypto_data=None,
+                    grounding_sources=[],
+                    agent_name="Crypto Tutor (Prof. Crypton)",
+                    disclaimer=CRYPTO_DISCLAIMER,
+                    model_used="deterministic_guardrail",
+                    latency_ms=latency,
+                )
             except CryptoProviderError as exc:
                 logger.warning("Crypto provider error for %s: %s", symbol, exc)
                 latency = round((time.perf_counter() - t0) * 1000, 2)
@@ -176,6 +191,22 @@ class CryptoAgent:
                 )
             except Exception as exc:
                 logger.warning("Failed to retrieve crypto quote for %s: %s", symbol, exc)
+                latency = round((time.perf_counter() - t0) * 1000, 2)
+                return CryptoAgentResult(
+                    query=query,
+                    answer=(
+                        f"### 🪙 Market Data Notice: **{symbol}**\n\n"
+                        f"Real-time market data for **{symbol}** is temporarily unavailable due to an unexpected error.\n"
+                        f"Finova AI does not estimate or simulate live cryptocurrency prices. Please try again shortly."
+                    ),
+                    grounding_status="ungrounded",
+                    crypto_data=None,
+                    grounding_sources=[],
+                    agent_name="Crypto Tutor (Prof. Crypton)",
+                    disclaimer=CRYPTO_DISCLAIMER,
+                    model_used="deterministic_guardrail",
+                    latency_ms=latency,
+                )
 
         # Step 3: Pedagogical Concept Generation (Prof. Crypton)
         model_name = str(getattr(self.llm, "model", "qwen2.5:7b-instruct"))
