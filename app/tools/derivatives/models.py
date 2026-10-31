@@ -18,6 +18,8 @@ class OptionPayoffPoint(BaseModel):
     spot_price: float = Field(description="Underlying spot price at expiration")
     payoff: float = Field(description="Gross payoff at expiration before premium")
     pnl: float = Field(description="Net profit or loss after accounting for premium")
+    total_payoff: float = Field(default=0.0, description="Gross payoff across contract lot size")
+    total_pnl: float = Field(default=0.0, description="Net profit or loss across contract lot size")
 
 
 class OptionPayoffResult(BaseModel):
@@ -26,10 +28,14 @@ class OptionPayoffResult(BaseModel):
     position: OptionPosition = Field(description="'long' or 'short'")
     strike_price: float = Field(description="Option strike price (K)")
     premium: float = Field(description="Option premium paid or received per unit")
+    lot_size: int = Field(default=1, ge=1, description="Option contract lot size")
+    total_premium: float = Field(default=0.0, description="Total option premium across contract lot size")
     breakeven_price: float = Field(description="Exact underlying price where P&L is zero")
     has_feasible_breakeven: bool = Field(default=True, description="Whether a non-negative breakeven price exists")
-    max_profit: float | str = Field(description="Maximum potential profit (or 'Unlimited')")
-    max_loss: float | str = Field(description="Maximum potential loss (or 'Unlimited')")
+    max_profit: float | str = Field(description="Maximum potential profit per unit (or 'Unlimited')")
+    max_loss: float | str = Field(description="Maximum potential loss per unit (or 'Unlimited')")
+    total_max_profit: float | str = Field(default=0.0, description="Total maximum potential profit across lot size (or 'Unlimited')")
+    total_max_loss: float | str = Field(default=0.0, description="Total maximum potential loss across lot size (or 'Unlimited')")
     payoff_table: list[OptionPayoffPoint] = Field(
         default_factory=list,
         description="Discrete schedule of P&L values across spot prices",

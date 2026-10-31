@@ -25,6 +25,7 @@ def calculate_option_payoff(
     strike_price: float,
     premium: float,
     spot_range: list[float] | None = None,
+    lot_size: int = 1,
 ) -> OptionPayoffResult:
     """
     Calculate deterministic option payoff and P&L across a schedule of underlying spot prices.
@@ -33,14 +34,15 @@ def calculate_option_payoff(
         option_type: 'call' or 'put' (case-insensitive)
         position: 'long' or 'short' (case-insensitive)
         strike_price: Strike price K (> 0)
-        premium: Premium paid or received (>= 0)
+        premium: Premium paid or received per unit (>= 0)
         spot_range: Optional explicit list of spot prices at expiration
+        lot_size: Number of units per contract lot (> 0, default 1)
 
     Returns:
-        OptionPayoffResult with exact breakeven, max profit/loss, and payoff table.
+        OptionPayoffResult with exact breakeven, max profit/loss, contract totals, and payoff table.
 
     Raises:
-        ValueError: If strike_price <= 0, premium < 0, or invalid option_type/position.
+        ValueError: If strike_price <= 0, premium < 0, lot_size <= 0, or invalid option_type/position.
     """
     opt_type_clean = option_type.strip().lower()
     if opt_type_clean not in ("call", "put"):
@@ -60,10 +62,16 @@ def calculate_option_payoff(
     if premium > 1e12:
         raise ValueError(f"Option premium exceeds maximum allowable bound (1e12): {premium}")
 
+    if isinstance(lot_size, bool) or not isinstance(lot_size, int) or lot_size <= 0:
+        raise ValueError(f"Lot size must be a strictly positive integer, got: {lot_size}")
+    if lot_size > 1000000:
+        raise ValueError(f"Lot size exceeds reasonable bound (1,000,000), got: {lot_size}")
+
     strike = round(float(strike_price), 2)
     prem = round(float(premium), 2)
+    lot = int(lot_size)
 
-    # Breakeven Calculation
+    # Breakeven Calculation (per share / unit)
     if opt_type_clean == "call":
         breakeven = round(strike + prem, 2)
         has_feasible_be = True
@@ -71,7 +79,7 @@ def calculate_option_payoff(
         breakeven = round(strike - prem, 2)
         has_feasible_be = breakeven >= 0.0
 
-    # Max Profit & Max Loss
+    # Max Profit & Max Loss (per unit and total)
     if opt_type_clean == "call":
         if pos_clean == "long":
             max_profit: float | str = "Unlimited"
@@ -86,6 +94,10 @@ def calculate_option_payoff(
         else:  # short put
             max_profit = prem
             max_loss = round(strike - prem, 2)
+
+    total_prem = round(prem * lot, 2)
+    total_max_profit = "Unlimited" if max_profit == "Unlimited" else round(float(max_profit) * lot, 2)
+    total_max_loss = "Unlimited" if max_loss == "Unlimited" else round(float(max_loss) * lot, 2)
 
     # Generate default discrete spot price schedule if not explicitly provided
     if spot_range is None or len(spot_range) == 0:
@@ -108,11 +120,16 @@ def calculate_option_payoff(
             net_pnl = round(prem - gross_payoff, 2)
             pt_payoff = round(-gross_payoff, 2)
 
+        total_pt_payoff = round(pt_payoff * lot, 2)
+        total_net_pnl = round(net_pnl * lot, 2)
+
         payoff_table.append(
             OptionPayoffPoint(
                 spot_price=spot,
                 payoff=pt_payoff,
                 pnl=net_pnl,
+                total_payoff=total_pt_payoff,
+                total_pnl=total_net_pnl,
             )
         )
 
@@ -121,10 +138,14 @@ def calculate_option_payoff(
         position=pos_clean,  # type: ignore[arg-type]
         strike_price=strike,
         premium=prem,
+        lot_size=lot,
+        total_premium=total_prem,
         breakeven_price=breakeven,
         has_feasible_breakeven=has_feasible_be,
         max_profit=max_profit,
         max_loss=max_loss,
+        total_max_profit=total_max_profit,
+        total_max_loss=total_max_loss,
         payoff_table=payoff_table,
     )
 

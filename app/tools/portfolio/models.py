@@ -49,12 +49,14 @@ class PortfolioData(BaseModel):
     """Complete simulated user portfolio state."""
     user_id: str = Field(description="Owner user partition ID")
     cash_balance: float = Field(default=0.0, ge=0, description="Uninvested liquid cash balance")
+    currency: str = Field(default="INR", description="Base portfolio currency denomination")
     holdings: list[Holding] = Field(default_factory=list, description="Active asset positions")
     updated_at: str = Field(default="", description="ISO 8601 update timestamp")
 
 
 class PortfolioMetrics(BaseModel):
     """Deterministic financial analytics for a portfolio."""
+    currency: str = Field(default="INR", description="Portfolio base currency")
     securities_cost_basis: float = Field(description="Total capital invested in securities (excludes cash)")
     securities_market_value: float = Field(description="Total current market value of securities")
     cash_balance: float = Field(description="Liquid uninvested cash balance")

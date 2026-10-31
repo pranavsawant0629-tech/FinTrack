@@ -36,7 +36,21 @@ class PortfolioService:
         """
         Calculate deterministic financial metrics with rigorous separation of
         invested capital (cost basis) and uninvested cash liquidity.
+
+        Validates currency uniformity across holdings and portfolio base currency.
         """
+        portfolio_currency = (portfolio.currency or "INR").strip().upper()
+
+        # Validate currency uniformity
+        for h in portfolio.holdings:
+            h_curr = (h.currency or "INR").strip().upper()
+            if h_curr != portfolio_currency:
+                raise ValueError(
+                    f"Mixed currency detected: holding '{h.symbol}' currency '{h_curr}' "
+                    f"does not match portfolio base currency '{portfolio_currency}'. "
+                    f"Mixed currencies require explicit exchange-rate conversion."
+                )
+
         securities_cost = round(sum(h.cost_basis for h in portfolio.holdings), 2)
         securities_value = round(sum(h.market_value for h in portfolio.holdings), 2)
         cash = round(portfolio.cash_balance, 2)
@@ -50,23 +64,31 @@ class PortfolioService:
         )
 
         # Asset Allocation (% of total portfolio value including cash)
+        # Aggregate raw market values first to prevent iterative rounding drift
         asset_alloc: dict[str, float] = {}
         if total_val > 0:
+            raw_asset_values: dict[str, float] = {}
             if cash > 0:
-                asset_alloc["cash"] = round((cash / total_val) * 100, 2)
+                raw_asset_values["cash"] = cash
 
             for h in portfolio.holdings:
-                curr = asset_alloc.get(h.asset_type, 0.0)
-                asset_alloc[h.asset_type] = round(curr + (h.market_value / total_val) * 100, 2)
+                raw_asset_values[h.asset_type] = raw_asset_values.get(h.asset_type, 0.0) + h.market_value
+
+            for a_type, raw_val in raw_asset_values.items():
+                asset_alloc[a_type] = round((raw_val / total_val) * 100, 2)
         else:
             asset_alloc["cash"] = 100.0
 
         # Sector Allocation (% of securities market value)
+        # Aggregate raw market values first to prevent iterative rounding drift
         sector_alloc: dict[str, float] = {}
         if securities_value > 0:
+            raw_sector_values: dict[str, float] = {}
             for h in portfolio.holdings:
-                curr = sector_alloc.get(h.sector, 0.0)
-                sector_alloc[h.sector] = round(curr + (h.market_value / securities_value) * 100, 2)
+                raw_sector_values[h.sector] = raw_sector_values.get(h.sector, 0.0) + h.market_value
+
+            for sec, raw_val in raw_sector_values.items():
+                sector_alloc[sec] = round((raw_val / securities_value) * 100, 2)
 
         # Top Holding Concentration
         top_symbol = ""
@@ -87,6 +109,7 @@ class PortfolioService:
             diversification = "Limited Diversification: Few holdings in simulated portfolio."
 
         return PortfolioMetrics(
+            currency=portfolio_currency,
             securities_cost_basis=securities_cost,
             securities_market_value=securities_value,
             cash_balance=cash,
