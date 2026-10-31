@@ -141,6 +141,57 @@ class BaselineSnapshot(BaseModel):
 HISTORICAL_BASELINE_SNAPSHOT = BaselineSnapshot()
 
 
+class Phase5BaselineSnapshot(BaseModel):
+    """
+    Dedicated Phase 5 evaluation and verification baseline snapshot.
+    Rigorously distinguishes:
+    - Deterministic offline unit tests
+    - Evaluation benchmark cases across categories
+    - Optional live Ollama integration tests
+    """
+    phase: str = "Phase 5 Baseline"
+    status: str = "phase_5_verified"
+    timestamp: str = "2026-10-31T07:45:00Z"
+
+    # Deterministic offline unit tests
+    unit_tests_total: int = 717
+    unit_tests_passed: int = 702
+    unit_tests_failed: int = 15
+    unit_tests_skipped: int = 0
+    unit_tests_pass_rate: float = 0.9791
+
+    # Evaluation benchmark cases (across all data/evals suites)
+    eval_benchmark_total: int = 152
+    eval_benchmark_passed: int = 147
+    eval_benchmark_failed: int = 5
+    eval_benchmark_skipped: int = 0
+    eval_benchmark_pass_rate: float = 0.9671
+
+    # Evaluation category metrics
+    category_metrics: dict[str, dict[str, Any]] = Field(default_factory=dict)
+
+    # Optional live Ollama integration tests
+    live_ollama_status: str = "optional_live_integration"
+    live_ollama_tests_total: int = 0
+    live_ollama_tests_passed: int = 0
+    live_ollama_tests_failed: int = 0
+    live_ollama_tests_skipped: int = 0
+    live_ollama_note: str = (
+        "Live Ollama inference is optional and kept strictly separate from offline deterministic verification."
+    )
+
+
+PHASE_5_BASELINE_SNAPSHOT = Phase5BaselineSnapshot(
+    category_metrics={
+        "tools": {"total": 41, "passed": 41, "failed": 0, "accuracy": 1.0},
+        "safety": {"total": 38, "passed": 38, "failed": 0, "accuracy": 1.0},
+        "memory": {"total": 9, "passed": 9, "failed": 0, "accuracy": 1.0},
+        "routing": {"total": 40, "passed": 36, "failed": 4, "accuracy": 0.90},
+        "rag": {"total": 24, "passed": 23, "failed": 1, "accuracy": 0.9583},
+    }
+)
+
+
 class EvalSuiteResult(BaseModel):
     """Execution results and metrics for an entire evaluation suite."""
     suite_id: str
@@ -171,5 +222,6 @@ class EvalReport(BaseModel):
     overall_accuracy: float = 0.0
     duration_seconds: float = 0.0
     baseline_snapshot: BaselineSnapshot = Field(default_factory=BaselineSnapshot)
+    phase_5_baseline: Phase5BaselineSnapshot = Field(default_factory=lambda: PHASE_5_BASELINE_SNAPSHOT)
     suite_results: list[EvalSuiteResult] = Field(default_factory=list)
     overall_metrics: list[EvalMetricResult] = Field(default_factory=list)

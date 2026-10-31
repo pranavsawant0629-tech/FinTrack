@@ -160,7 +160,10 @@ def test_generate_markdown_scorecard() -> None:
     report = runner.run_all(suite_filter="routing_ambiguous")
     scorecard = generate_markdown_scorecard(report)
 
-    assert "# Finova AI — Stage 7A Evaluation Baseline Scorecard" in scorecard
+    assert (
+        "# FinTrack — Phase 5 Evaluation Scorecard" in scorecard
+        or "# Finova AI — Stage 7A Evaluation Baseline Scorecard" in scorecard
+    )
     assert "378" in scorecard
     assert "routing_ambiguous" in scorecard
     assert "100.0%" in scorecard

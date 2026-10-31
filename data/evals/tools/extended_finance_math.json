@@ -1,0 +1,380 @@
+{
+  "suite_id": "tools_extended_finance_math",
+  "name": "Deterministic Extended Financial Mathematics Engine Evaluation",
+  "category": "tools",
+  "description": "Evaluates closed-form correctness of CAGR, Fisher equation real returns, Rule of 72 doubling time, Sharpe and Sortino ratios, and Indian currency parsing.",
+  "metadata": {"version": "1.0.0", "target_accuracy": 100.0},
+  "cases": [
+    {
+      "case_id": "MATH_EXT_001",
+      "category": "cagr",
+      "input_data": {
+        "initial_value": 100000.0,
+        "final_value": 200000.0,
+        "tenure_years": 5.0
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "cagr_percent": 14.87,
+        "total_growth_percent": 100.0,
+        "absolute_gain": 100000.0
+      },
+      "tags": ["tools", "extended_math", "cagr", "positive"],
+      "description": "CAGR doubling calculation over 5.0 years: 14.87% annualized growth"
+    },
+    {
+      "case_id": "MATH_EXT_002",
+      "category": "cagr",
+      "input_data": {
+        "initial_value": 500000.0,
+        "final_value": 300000.0,
+        "tenure_years": 3.0
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "cagr_percent": -15.66,
+        "total_growth_percent": -40.0,
+        "absolute_gain": -200000.0
+      },
+      "tags": ["tools", "extended_math", "cagr", "negative"],
+      "description": "Negative CAGR / capital loss from 500k to 300k over 3 years: -15.66% annualized"
+    },
+    {
+      "case_id": "MATH_EXT_003",
+      "category": "cagr",
+      "input_data": {
+        "initial_value": 100000.0,
+        "final_value": 0.0,
+        "tenure_years": 2.0
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "cagr_percent": -100.0,
+        "total_growth_percent": -100.0,
+        "absolute_gain": -100000.0
+      },
+      "tags": ["tools", "extended_math", "cagr", "boundary", "zero"],
+      "description": "CAGR complete capital loss boundary: final value 0.0 yields -100.0% CAGR"
+    },
+    {
+      "case_id": "MATH_EXT_004",
+      "category": "cagr",
+      "input_data": {
+        "initial_value": 250000.0,
+        "final_value": 325000.0,
+        "tenure_years": 2.5
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "cagr_percent": 11.07,
+        "total_growth_percent": 30.0,
+        "absolute_gain": 75000.0
+      },
+      "tags": ["tools", "extended_math", "cagr", "fractional_tenure"],
+      "description": "CAGR with fractional tenure of 2.5 years: 11.07% annualized"
+    },
+    {
+      "case_id": "MATH_EXT_005",
+      "category": "cagr",
+      "input_data": {
+        "initial_value": -50000.0,
+        "final_value": 100000.0,
+        "tenure_years": 3.0
+      },
+      "expected_outcome": "error",
+      "expected_output": "ValueError",
+      "tags": ["tools", "extended_math", "cagr", "invalid_input"],
+      "description": "Invalid negative initial value must raise ValueError"
+    },
+    {
+      "case_id": "MATH_EXT_006",
+      "category": "cagr",
+      "input_data": {
+        "initial_value": 100000.0,
+        "final_value": 150000.0,
+        "tenure_years": 0.0
+      },
+      "expected_outcome": "error",
+      "expected_output": "ValueError",
+      "tags": ["tools", "extended_math", "cagr", "invalid_input"],
+      "description": "Zero tenure years must raise ValueError"
+    },
+    {
+      "case_id": "MATH_EXT_007",
+      "category": "real_return",
+      "input_data": {
+        "nominal_return_pct": 12.0,
+        "inflation_rate_pct": 6.0
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "real_return_percent": 5.66,
+        "linear_approximation_percent": 6.0,
+        "approximation_error_percent": -0.34
+      },
+      "tags": ["tools", "extended_math", "real_return", "fisher"],
+      "description": "Standard Fisher equation: 12% nominal with 6% inflation yields 5.66% real return"
+    },
+    {
+      "case_id": "MATH_EXT_008",
+      "category": "real_return",
+      "input_data": {
+        "nominal_return_pct": 6.0,
+        "inflation_rate_pct": 6.0
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "real_return_percent": 0.0,
+        "linear_approximation_percent": 0.0,
+        "approximation_error_percent": 0.0
+      },
+      "tags": ["tools", "extended_math", "real_return", "zero"],
+      "description": "Nominal return exactly equal to inflation rate yields 0.0% real return"
+    },
+    {
+      "case_id": "MATH_EXT_009",
+      "category": "real_return",
+      "input_data": {
+        "nominal_return_pct": -5.0,
+        "inflation_rate_pct": 5.0
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "real_return_percent": -9.52,
+        "linear_approximation_percent": -10.0,
+        "approximation_error_percent": 0.48
+      },
+      "tags": ["tools", "extended_math", "real_return", "negative"],
+      "description": "Negative nominal return -5% compounded by 5% inflation yields -9.52% real return"
+    },
+    {
+      "case_id": "MATH_EXT_010",
+      "category": "real_return",
+      "input_data": {
+        "nominal_return_pct": 8.0,
+        "inflation_rate_pct": -2.0
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "real_return_percent": 10.20,
+        "linear_approximation_percent": 10.0,
+        "approximation_error_percent": 0.20
+      },
+      "tags": ["tools", "extended_math", "real_return", "deflation"],
+      "description": "Deflation scenario: 8% nominal with -2% inflation yields 10.20% real return"
+    },
+    {
+      "case_id": "MATH_EXT_011",
+      "category": "real_return",
+      "input_data": {
+        "nominal_return_pct": 10.0,
+        "inflation_rate_pct": -100.0
+      },
+      "expected_outcome": "error",
+      "expected_output": "ValueError",
+      "tags": ["tools", "extended_math", "real_return", "invalid_input"],
+      "description": "Inflation rate <= -100% causes mathematical singularity and must raise ValueError"
+    },
+    {
+      "case_id": "MATH_EXT_012",
+      "category": "real_return",
+      "input_data": {
+        "nominal_return_pct": -105.0,
+        "inflation_rate_pct": 5.0
+      },
+      "expected_outcome": "error",
+      "expected_output": "ValueError",
+      "tags": ["tools", "extended_math", "real_return", "invalid_input"],
+      "description": "Nominal return < -100% is physically impossible and must raise ValueError"
+    },
+    {
+      "case_id": "MATH_EXT_013",
+      "category": "rule_of_72",
+      "input_data": {
+        "annual_rate_pct": 8.0
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "approximate_doubling_years": 9.0,
+        "exact_doubling_years": 9.01,
+        "estimation_discrepancy_years": 0.01
+      },
+      "tags": ["tools", "extended_math", "rule_of_72"],
+      "description": "Rule of 72 doubling time at 8.0% return: 9.0 years approx vs 9.01 years exact"
+    },
+    {
+      "case_id": "MATH_EXT_014",
+      "category": "rule_of_72",
+      "input_data": {
+        "annual_rate_pct": 12.0
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "approximate_doubling_years": 6.0,
+        "exact_doubling_years": 6.12,
+        "estimation_discrepancy_years": 0.12
+      },
+      "tags": ["tools", "extended_math", "rule_of_72"],
+      "description": "Rule of 72 doubling time at 12.0% return: 6.0 years approx vs 6.12 years exact"
+    },
+    {
+      "case_id": "MATH_EXT_015",
+      "category": "rule_of_72",
+      "input_data": {
+        "annual_rate_pct": 6.0
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "approximate_doubling_years": 12.0,
+        "exact_doubling_years": 11.9,
+        "estimation_discrepancy_years": 0.1
+      },
+      "tags": ["tools", "extended_math", "rule_of_72"],
+      "description": "Rule of 72 doubling time at 6.0% return: 12.0 years approx vs 11.90 years exact"
+    },
+    {
+      "case_id": "MATH_EXT_016",
+      "category": "rule_of_72",
+      "input_data": {
+        "annual_rate_pct": -5.0
+      },
+      "expected_outcome": "error",
+      "expected_output": "ValueError",
+      "tags": ["tools", "extended_math", "rule_of_72", "invalid_input"],
+      "description": "Negative return rate cannot double capital and must raise ValueError"
+    },
+    {
+      "case_id": "MATH_EXT_017",
+      "category": "sharpe_ratio",
+      "input_data": {
+        "returns": [0.02, 0.04, -0.01, 0.03, 0.02],
+        "risk_free_rate": 0.005,
+        "frequency": "monthly"
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "periodic_sharpe_ratio": 0.8018,
+        "annualized_sharpe_ratio": 2.7775,
+        "sharpe_status": "ok"
+      },
+      "tags": ["tools", "portfolio", "sharpe_ratio", "monthly"],
+      "description": "Sharpe ratio evaluation for 5 monthly returns with Rf = 0.005: periodic 0.8018, annualized 2.7775"
+    },
+    {
+      "case_id": "MATH_EXT_018",
+      "category": "sharpe_ratio",
+      "input_data": {
+        "returns": [-0.01, -0.02, -0.03, -0.01],
+        "risk_free_rate": 0.005,
+        "frequency": "monthly"
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "periodic_mean_return": -0.0175,
+        "sharpe_status": "ok"
+      },
+      "tags": ["tools", "portfolio", "sharpe_ratio", "negative"],
+      "description": "Negative return series underperforming risk-free rate yields negative Sharpe ratio"
+    },
+    {
+      "case_id": "MATH_EXT_019",
+      "category": "sharpe_ratio",
+      "input_data": {
+        "returns": [0.02, 0.02, 0.02],
+        "risk_free_rate": 0.005,
+        "frequency": "monthly"
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "sharpe_status": "undefined_zero_variance",
+        "periodic_sharpe_ratio": null
+      },
+      "tags": ["tools", "portfolio", "sharpe_ratio", "boundary", "zero_variance"],
+      "description": "Zero return variance renders Sharpe ratio undefined and returns status undefined_zero_variance"
+    },
+    {
+      "case_id": "MATH_EXT_020",
+      "category": "sharpe_ratio",
+      "input_data": {
+        "returns": [0.05, 0.02],
+        "risk_free_rate": 0.005
+      },
+      "expected_outcome": "error",
+      "expected_output": "ValueError",
+      "tags": ["tools", "portfolio", "sharpe_ratio", "invalid_input"],
+      "description": "Sample size N < 3 fails implementation boundary condition and raises ValueError"
+    },
+    {
+      "case_id": "MATH_EXT_021",
+      "category": "sortino_ratio",
+      "input_data": {
+        "returns": [0.05, 0.08, 0.06],
+        "risk_free_rate": 0.02,
+        "mar": 0.02,
+        "frequency": "monthly"
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "sortino_status": "undefined_zero_downside",
+        "periodic_sortino_ratio": null
+      },
+      "tags": ["tools", "portfolio", "sortino_ratio", "boundary", "zero_downside"],
+      "description": "Zero downside deviation below MAR renders Sortino ratio undefined_zero_downside"
+    },
+    {
+      "case_id": "MATH_EXT_022",
+      "category": "sortino_ratio",
+      "input_data": {
+        "returns": [0.04, -0.02, 0.06, 0.01],
+        "risk_free_rate": 0.01,
+        "mar": 0.01,
+        "frequency": "monthly"
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "periodic_sortino_ratio": 0.8333,
+        "annualized_sortino_ratio": 2.8868,
+        "sortino_status": "ok"
+      },
+      "tags": ["tools", "portfolio", "sortino_ratio", "mixed"],
+      "description": "Sortino ratio evaluation for mixed returns with downside deviations: periodic 0.8333, annualized 2.8868"
+    },
+    {
+      "case_id": "MATH_EXT_023",
+      "category": "indian_number",
+      "input_data": {
+        "input_string": "1.5 Crore"
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "parsed_value": 15000000.0
+      },
+      "tags": ["tools", "parser", "indian_number", "crore"],
+      "description": "Deterministic parsing of '1.5 Crore' into exact 15,000,000.0 float"
+    },
+    {
+      "case_id": "MATH_EXT_024",
+      "category": "indian_number",
+      "input_data": {
+        "input_string": "₹50 Lakhs"
+      },
+      "expected_outcome": "pass",
+      "expected_output": {
+        "parsed_value": 5000000.0
+      },
+      "tags": ["tools", "parser", "indian_number", "lakhs"],
+      "description": "Deterministic parsing of '₹50 Lakhs' into exact 5,000,000.0 float"
+    },
+    {
+      "case_id": "MATH_EXT_025",
+      "category": "indian_number",
+      "input_data": {
+        "input_string": "$500"
+      },
+      "expected_outcome": "error",
+      "expected_output": "ValueError",
+      "tags": ["tools", "parser", "indian_number", "unsupported_currency"],
+      "description": "Unsupported non-INR foreign currency '$500' raises strict ValueError"
+    }
+  ]
+}
