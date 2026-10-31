@@ -38,6 +38,11 @@ class NewsArticle:
     symbol: str | None = None
     freshness: NewsFreshness = NewsFreshness.REALTIME
 
+    @property
+    def is_dated(self) -> bool:
+        """True if the article has a verified publication timestamp."""
+        return bool(self.published_at and self.published_at.strip())
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,
@@ -49,6 +54,7 @@ class NewsArticle:
             "published_at": self.published_at,
             "symbol": self.symbol,
             "freshness": self.freshness.value,
+            "is_dated": self.is_dated,
         }
 
 

@@ -8,8 +8,10 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import logging
+import re
 import time
 from typing import Any
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 from app.tools.news.interfaces import BaseNewsProvider
 from app.tools.news.models import NewsArticle, NewsFreshness, NewsSearchResult
@@ -18,6 +20,124 @@ from app.tools.news.providers.rss_provider import PublicRSSNewsProvider
 from app.tools.news.providers.yfinance_provider import YFinanceNewsProvider
 
 logger = logging.getLogger(__name__)
+
+# Known marketing and analytics tracking query parameters to conservatively strip
+TRACKING_QUERY_PARAMS = {
+    "utm_source",
+    "utm_medium",
+    "utm_campaign",
+    "utm_term",
+    "utm_content",
+    "ref",
+    "fbclid",
+    "gclid",
+    "_hsenc",
+    "_hsmi",
+    "mc_cid",
+    "mc_eid",
+}
+
+
+def canonicalize_url(url: str) -> str:
+    """Conservatively canonicalize an article URL.
+    - Strips fragment (#...)
+    - Lowercases scheme and netloc
+    - Strips known tracking parameters (utm_*, ref, fbclid, etc.)
+    - Preserves substantive query parameters and article paths
+    - Normalizes trailing slashes on root path
+    """
+    if not url or not url.strip():
+        return ""
+    try:
+        parsed = urlparse(url.strip())
+        if not parsed.scheme or not parsed.netloc:
+            return url.strip()
+        scheme = parsed.scheme.lower()
+        netloc = parsed.netloc.lower()
+        path = parsed.path.rstrip("/") if parsed.path and parsed.path != "/" else parsed.path
+
+        if parsed.query:
+            filtered_params = [
+                (k, v)
+                for k, v in parse_qsl(parsed.query, keep_blank_values=True)
+                if k.lower() not in TRACKING_QUERY_PARAMS and not k.lower().startswith("utm_")
+            ]
+            query = urlencode(filtered_params)
+        else:
+            query = ""
+
+        return urlunparse((scheme, netloc, path, parsed.params, query, ""))
+    except Exception:
+        return url.strip()
+
+
+def normalize_headline(title: str) -> str:
+    """Normalize a headline for conservative duplicate matching.
+    Lowercases, strips punctuation, collapses whitespace.
+    """
+    if not title:
+        return ""
+    cleaned = title.lower()
+    cleaned = re.sub(r"[^\w\s]", "", cleaned)
+    return " ".join(cleaned.split())
+
+
+def sort_articles_by_date(articles: list[NewsArticle]) -> list[NewsArticle]:
+    """Sort articles with valid timestamps descending (newest first).
+    Articles with unknown or missing dates appear after dated articles,
+    preserving stable original order.
+    """
+    def _sort_key(item: tuple[int, NewsArticle]) -> tuple[int, float, int]:
+        idx, art = item
+        if art.published_at and art.published_at.strip():
+            try:
+                dt = datetime.fromisoformat(art.published_at.strip())
+                return (0, -dt.timestamp(), idx)
+            except Exception:
+                pass
+        return (1, 0.0, idx)
+
+    indexed = list(enumerate(articles))
+    indexed.sort(key=_sort_key)
+    return [art for _, art in indexed]
+
+
+def deduplicate_articles(articles: list[NewsArticle]) -> list[NewsArticle]:
+    """Deduplicate articles using conservative URL canonicalization and headline matching.
+    Preserves first occurrence of each unique article.
+    """
+    seen_urls: set[str] = set()
+    seen_headlines: set[str] = set()
+    deduped: list[NewsArticle] = []
+
+    for art in articles:
+        canon_url = canonicalize_url(art.url) if art.url else ""
+        norm_title = normalize_headline(art.title) if art.title else ""
+
+        # Check URL duplicate
+        if canon_url and canon_url in seen_urls:
+            continue
+
+        # Check headline duplicate (require at least 3 words to avoid generic collisions)
+        is_substantial_title = len(norm_title.split()) >= 3
+        if is_substantial_title and norm_title in seen_headlines:
+            continue
+
+        if canon_url:
+            seen_urls.add(canon_url)
+        if is_substantial_title and norm_title:
+            seen_headlines.add(norm_title)
+
+        deduped.append(art)
+
+    return deduped
+
+
+def deduplicate_and_sort_articles(articles: list[NewsArticle]) -> list[NewsArticle]:
+    """Sort articles chronologically (newest first, undated last), then deduplicate."""
+    sorted_arts = sort_articles_by_date(articles)
+    return deduplicate_articles(sorted_arts)
+
 
 
 class NewsService:
@@ -69,12 +189,13 @@ class NewsService:
             try:
                 articles = provider.fetch_ticker_news(clean_symbol, limit=limit)
                 if articles:
-                    self._cache[cache_key] = (time.time(), articles, provider.name)
+                    deduped = deduplicate_and_sort_articles(articles)
+                    self._cache[cache_key] = (time.time(), deduped, provider.name)
                     freshness = NewsFreshness.OFFLINE_FIXTURE if isinstance(provider, MockNewsProvider) else NewsFreshness.REALTIME
                     return NewsSearchResult(
                         query=f"news for {clean_symbol}",
                         symbol=clean_symbol,
-                        articles=articles,
+                        articles=deduped[:limit],
                         freshness=freshness,
                         provider=provider.name,
                         is_live=not isinstance(provider, MockNewsProvider),
@@ -137,14 +258,14 @@ class NewsService:
                 logger.warning("Provider %s failed fetching macro news: %s", provider.name, exc)
 
         if aggregated_articles:
-            # Sort newest first if possible
-            self._cache[cache_key] = (time.time(), aggregated_articles, ",".join(reporting_providers))
+            deduped = deduplicate_and_sort_articles(aggregated_articles)
+            self._cache[cache_key] = (time.time(), deduped, ",".join(reporting_providers))
             is_fixture = any(isinstance(p, MockNewsProvider) for p in self._providers)
             freshness = NewsFreshness.OFFLINE_FIXTURE if is_fixture else NewsFreshness.REALTIME
             return NewsSearchResult(
                 query="macro and regulatory news",
                 symbol=None,
-                articles=aggregated_articles[:limit],
+                articles=deduped[:limit],
                 freshness=freshness,
                 provider=",".join(reporting_providers),
                 is_live=not is_fixture,

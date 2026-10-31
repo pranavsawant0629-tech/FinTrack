@@ -84,9 +84,10 @@ class YFinanceNewsProvider(BaseNewsProvider):
                 if isinstance(pub_time, (int, float)):
                     published_at = datetime.fromtimestamp(pub_time, tz=timezone.utc).isoformat()
                 elif isinstance(pub_time, str):
-                    published_at = pub_time
+                    from app.tools.news.providers.rss_provider import normalize_rss_pub_date
+                    published_at = normalize_rss_pub_date(pub_time)
                 else:
-                    published_at = datetime.now(timezone.utc).isoformat()
+                    published_at = ""
 
                 article_id = str(item.get("uuid") or content.get("id") or f"{symbol}_{idx}")
 

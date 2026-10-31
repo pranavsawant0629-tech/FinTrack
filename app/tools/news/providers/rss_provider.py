@@ -7,13 +7,71 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import logging
+import re
 import xml.etree.ElementTree as ET
+from email.utils import parsedate_to_datetime
 import httpx
 
 from app.tools.news.interfaces import BaseNewsProvider
 from app.tools.news.models import NewsArticle, NewsFreshness, NewsSourceType
 
 logger = logging.getLogger(__name__)
+
+
+def normalize_rss_pub_date(raw_date: str | None) -> str:
+    """Normalize RSS publication date string (RFC 2822 or ISO-8601) to ISO-8601 UTC.
+
+    If unparseable or absent, returns empty string "" (unknown).
+    Never replaces an unknown publication date with the current time.
+    """
+    if not raw_date or not raw_date.strip():
+        return ""
+    text = raw_date.strip()
+    # 1. Try RFC 2822 (standard for RSS 2.0 pubDate)
+    try:
+        dt = parsedate_to_datetime(text)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc).isoformat()
+    except Exception:
+        pass
+
+    # 2. Try ISO-8601
+    try:
+        dt = datetime.fromisoformat(text)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc).isoformat()
+    except Exception:
+        pass
+
+    return ""
+
+
+def matches_ticker_symbol(symbol: str, text: str) -> bool:
+    """Symbol-aware matching with appropriate word boundaries.
+
+    Escapes special characters in symbol and prevents false positive
+    matches on short symbols (e.g., 'IT', 'BEL', 'ON') inside longer words.
+    """
+    if not symbol or not text:
+        return False
+
+    clean_sym = symbol.strip().upper()
+    for suffix in (".NS", ".BO"):
+        if clean_sym.endswith(suffix):
+            clean_sym = clean_sym[:-len(suffix)]
+    if clean_sym.startswith("^"):
+        clean_sym = clean_sym[1:]
+    clean_sym = clean_sym.strip()
+    if not clean_sym:
+        return False
+
+    escaped = re.escape(clean_sym)
+    # Ensure boundary: cannot be preceded or followed by alphanumeric characters
+    pattern = rf"(?:^|(?<=[^A-Za-z0-9])){escaped}(?=$|[^A-Za-z0-9])"
+    return bool(re.search(pattern, text, re.IGNORECASE))
+
 
 
 class PublicRSSNewsProvider(BaseNewsProvider):
@@ -40,8 +98,10 @@ class PublicRSSNewsProvider(BaseNewsProvider):
     def fetch_ticker_news(self, symbol: str, limit: int = 5) -> list[NewsArticle]:
         """RSS feeds are macro/regulatory, but we can filter by symbol/keyword."""
         all_news = self.fetch_macro_news(limit=limit * 3)
-        symbol_clean = symbol.upper().replace(".NS", "").replace(".BO", "")
-        matched = [a for a in all_news if symbol_clean in a.title.upper() or symbol_clean in a.summary.upper()]
+        matched = [
+            a for a in all_news
+            if matches_ticker_symbol(symbol, a.title) or matches_ticker_symbol(symbol, a.summary)
+        ]
         return matched[:limit]
 
     def fetch_macro_news(self, limit: int = 5) -> list[NewsArticle]:
@@ -85,7 +145,8 @@ class PublicRSSNewsProvider(BaseNewsProvider):
                 title = title_elem.text.strip() if title_elem is not None and title_elem.text else "Regulatory Circular"
                 link = link_elem.text.strip() if link_elem is not None and link_elem.text else ""
                 desc = desc_elem.text.strip() if desc_elem is not None and desc_elem.text else title
-                pub_date = pub_date_elem.text.strip() if pub_date_elem is not None and pub_date_elem.text else datetime.now(timezone.utc).isoformat()
+                pub_date_raw = pub_date_elem.text.strip() if pub_date_elem is not None and pub_date_elem.text else None
+                pub_date = normalize_rss_pub_date(pub_date_raw)
 
                 # Clean simple HTML tags from description if present
                 clean_desc = desc.replace("<p>", "").replace("</p>", "").replace("<br>", " ").replace("<b>", "").replace("</b>", "")

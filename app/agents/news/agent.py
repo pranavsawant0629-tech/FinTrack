@@ -144,7 +144,7 @@ class NewsAgent:
         for idx, art in enumerate(res.articles, start=1):
             lines.append(f"#### {idx}. {art.title}")
             lines.append(f"- **Source:** {art.source} ({art.source_type.value})")
-            lines.append(f"- **Published:** {art.published_at}")
+            lines.append(f"- **Published:** {art.published_at if art.published_at else 'Unknown'}")
             if art.summary:
                 lines.append(f"- **Summary:** {art.summary}")
             if art.url and not art.url.startswith("https://finova.mock"):
